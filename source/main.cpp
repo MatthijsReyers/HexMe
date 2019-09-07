@@ -81,10 +81,10 @@ int main(int argc, char* argv[])
 {
     // Parse command line arguments.
     // ------------------------------------------------------
-    char* fileUrl;
     int rows = 2;
+    char* fileUrl;
     bool lineNums = true;
-    parseArgs(argc, argv, rows, fileUrl);
+    parseArgs(argc, argv, rows, fileUrl, lineNums);
     
     // Open file.
     // ------------------------------------------------------
