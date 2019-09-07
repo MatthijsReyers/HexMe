@@ -8,29 +8,73 @@
 #include <thread>
 #include <stdio.h>
 
-int buffer0[8];
-int buffer1[8];
-int buffer2[8];
-int buffer3[8];
+// Custom argument parser.
+#include <argparser.h>
 
-// Function for loading 8 chars into an int buffer.
-// ----------------------------------------------------------
-int* loadBuffer(std::ifstream file)
+void printLineNum(int &counter, int rows)
 {
-    int outBuffer[8];
-    for (int i = 0; i < 8; i++)
+    std::string filler;
+    if (counter < 16) filler = "00000";
+    else if (counter < 256) filler = "0000";
+    else if (counter < 4096) filler = "000";
+    else if (counter < 65536) filler = "00";
+    else if (counter < 1048576) filler = "0";
+    std::cout << std::hex << filler << counter << " ║ ";
+    counter = counter + (8 * rows);
+}
+
+// Function for loading bytes into an int buffer.
+// ----------------------------------------------------------
+void loadBuffer(std::ifstream &file, int (&buffer)[32], int rows)
+{
+    int Max = rows * 8;
+    for (int i = 0; i < Max; i++)
     {
-        if (file.good()) outBuffer[i] = file.get();
-        else outBuffer[i] = NULL;
+        if (file.good()) buffer[i] = file.get();
+        else buffer[i] = 999;
     }
-    return outBuffer;
 }
 
 // Function for outputing int buffer to console in hex form.
 // ----------------------------------------------------------
-void printRowHex(int buffer[])
+void printRowHex(int (&buffer)[32], int row)
 {
-    
+    int rangeMin = 8 * row;
+    int rangeMax = 8 * (row + 1);
+    for (int i = rangeMin; i < rangeMax; i++)
+    {   
+        if (buffer[i] != 999 && buffer[i] != -1)
+        {
+            if (buffer[i] < 16) std::cout << "0" << std::hex << buffer[i] << " ";
+            else std::cout << std::hex << buffer[i] << " ";
+        }
+        // If the file has ended just print spaces.
+        else std::cout << "   ";
+    }
+    std::cout << "║ "; 
+}
+
+// Function for outputing int buffer to console in char form.
+// ----------------------------------------------------------
+void printRowChar(int (&buffer)[32], int row)
+{
+    char converted;
+    int rangeMin = 8 * row;
+    int rangeMax = 8 * (row + 1);
+    for (int i = rangeMin; i < rangeMax; i++)
+    {
+        // Check if file has not ended and char is not an endl.
+        if (buffer[i] != 999 && buffer[i] != 10 && buffer[i] != -1)
+        {
+            // Convert int to char and print.
+            converted = (char)buffer[i];
+            if (converted == 10) std::cout << "_";
+            else std::cout << converted;
+        }
+        // If the file has ended or we find an invisible char, just print spaces.
+        else std::cout << " ";
+    }
+    std::cout << " ║ ";
 }
 
 int main(int argc, char* argv[])
@@ -48,7 +92,7 @@ int main(int argc, char* argv[])
 
     // Temporary variables.
     // ------------------------------------------------------
-    int rows = 2;
+    int rows = 3;
     bool lineNums = true;
 
     // Generate top.
@@ -56,7 +100,7 @@ int main(int argc, char* argv[])
     std::cout << "╔";                                           // Cornerpiece
     if (lineNums) std::cout << "══" << "══════" << "╦";         // Line numbers
     for (int i = 0; i < rows; i++) {
-        std::cout << "══" << "════════════════════════" << "╦";}// Hex rows
+        std::cout << "══" << "═══════════════════════" << "╦";}// Hex rows
     for (int i = 0; i < rows; i++) {
         std::cout << "══" << "════════";                        // Char rows
         if (i != (rows -1)) std::cout << "╦";}
@@ -64,37 +108,27 @@ int main(int argc, char* argv[])
 
     // Generate Rows
     // ------------------------------------------------------
-    int buffer[8];
-    char converted;
+    int buffer[32];
+    int rowCount = 0;
     while (file.good())
     {
-        std::cout << "| ";
+        // Starting line.
+        std::cout << "║ ";
 
-        for (int i = 0; i < 8; i++)
-        {
-            if (buffer[i] != 999)
-            {
-                if (buffer[i] < 16) std::cout << "0" << std::hex << buffer[i] << " ";
-                else std::cout << std::hex << buffer[i] << " ";
-            }
-            // If the file has ended just print spaces.
-            else std::cout << "   ";
-        }
-        std::cout << "| ";
-        for (int i = 0; i < 8; i++)
-        {
-            // Check if file has not ended and char is not an endl.
-            if (buffer[i] != 999 || buffer[i] != 10)
-            {
-                // Convert int to char and print.
-                converted = (char)buffer[i];
-                if (converted == 10) std::cout << "_";
-                else std::cout << converted;
-            }
-            // If the file has ended or we find an invisible char, just print spaces.
-            else std::cout << " ";
-        }
-        std::cout << " |" << std::endl;
+        // Print row numbers.
+        if (lineNums) printLineNum(rowCount, rows);
+
+        // Load bytes into buffer.
+        loadBuffer(file, buffer, rows);
+
+        // Print hex rows.
+        for (int i = 0; i < rows; i++) printRowHex(buffer, i);
+        
+        // Print char rows.
+        for (int i = 0; i < rows; i++) printRowChar(buffer, i);
+        
+        // Line break
+        std::cout << std::endl;
     }
 
     // Generate bottom.
@@ -102,7 +136,7 @@ int main(int argc, char* argv[])
     std::cout << "╚";                                           // Cornerpiece
     if (lineNums) std::cout << "══" << "══════" << "╩";         // Line numbers
     for (int i = 0; i < rows; i++) {
-        std::cout << "══" << "════════════════════════" << "╩";}// Hex rows
+        std::cout << "══" << "═══════════════════════" << "╩";}// Hex rows
     for (int i = 0; i < rows; i++) {
         std::cout << "══" << "════════";                        // Char rows
         if (i != (rows -1)) std::cout << "╩";}
