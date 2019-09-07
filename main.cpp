@@ -1,10 +1,6 @@
 
 // 18-05-2019 Matthijs Reyers
 // 
-// Mingw64 compiler args:
-// -std=gnu++11
-// 
-// g++ -pthread -o hexme main.cpp 
 
 #include <iostream>
 #include <fstream>
@@ -12,20 +8,25 @@
 #include <thread>
 #include <stdio.h>
 
-// Main vars
-std::ifstream file;
-
-
-int main(int argv, char** argc)
+int main(int argc, char* argv[])
 {
-    // Extract filename from commandline args.
+    // Check command line arguments
     // ------------------------------------------------------
-    file.open("testfile.hex");
-    if (!file)
-    {
-        printf("There was a problem opening the file.\n");
-        exit(1);
-    }
+    if (argc > 2) {printf("ERROR: HexMe only needs one argument.\n"); return 1;}
+    if (argc == 1){printf("ERROR: Please specify a file to view.\n"); return 1;}
+    
+    // Open file.
+    // ------------------------------------------------------
+    std::ifstream file;
+    file.open(argv[1]);
+    if (!file) {printf("ERROR: The specified file does not exist.\n"); return 1;}
+
+    // Temporary variables.
+    // ------------------------------------------------------
+    int rows = 2;
+    bool lineNums = true;
+
+
     std::cout << "--------------------------------------" << std::endl;
     int buffer[8];
     char converted;
