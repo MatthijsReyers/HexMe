@@ -79,21 +79,18 @@ void printRowChar(int (&buffer)[32], int row)
 
 int main(int argc, char* argv[])
 {
-    // Check command line arguments
+    // Parse command line arguments.
     // ------------------------------------------------------
-    if (argc > 2) {printf("ERROR: HexMe only needs one argument.\n"); return 1;}
-    if (argc == 1){printf("ERROR: Please specify a file to view.\n"); return 1;}
+    char* fileUrl;
+    int rows = 2;
+    bool lineNums = true;
+    parseArgs(argc, argv, rows, fileUrl);
     
     // Open file.
     // ------------------------------------------------------
     std::ifstream file;
-    file.open(argv[1]);
+    file.open(fileUrl);
     if (!file) {printf("ERROR: The specified file does not exist.\n"); return 1;}
-
-    // Temporary variables.
-    // ------------------------------------------------------
-    int rows = 3;
-    bool lineNums = true;
 
     // Generate top.
     // ------------------------------------------------------
