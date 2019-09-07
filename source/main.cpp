@@ -8,9 +8,29 @@
 #include <thread>
 #include <stdio.h>
 
+int buffer0[8];
+int buffer1[8];
+int buffer2[8];
+int buffer3[8];
+
+// Function for loading 8 chars into an int buffer.
+// ----------------------------------------------------------
+int* loadBuffer(std::ifstream file)
+{
+    int outBuffer[8];
+    for (int i = 0; i < 8; i++)
+    {
+        if (file.good()) outBuffer[i] = file.get();
+        else outBuffer[i] = NULL;
+    }
+    return outBuffer;
+}
+
+// Function for outputing int buffer to console in hex form.
+// ----------------------------------------------------------
 void printRowHex(int buffer[])
 {
-
+    
 }
 
 int main(int argc, char* argv[])
@@ -33,20 +53,23 @@ int main(int argc, char* argv[])
 
     // Generate top.
     // ------------------------------------------------------
-    std::cout << "╔";       // Cornerpiece
-    if (lineNums) std::cout << "══";
+    std::cout << "╔";                                           // Cornerpiece
+    if (lineNums) std::cout << "══" << "══════" << "╦";         // Line numbers
+    for (int i = 0; i < rows; i++) {
+        std::cout << "══" << "════════════════════════" << "╦";}// Hex rows
+    for (int i = 0; i < rows; i++) {
+        std::cout << "══" << "════════";                        // Char rows
+        if (i != (rows -1)) std::cout << "╦";}
+    std::cout << "╗" << std::endl;                              // Cornerpiece and line break
 
-    std::cout << "--------------------------------------" << std::endl;
+    // Generate Rows
+    // ------------------------------------------------------
     int buffer[8];
     char converted;
     while (file.good())
     {
         std::cout << "| ";
-        for (int i = 0; i < 8; i++)
-        {
-            if (file.good()) buffer[i] = file.get();
-            else buffer[i] = 999;
-        }
+
         for (int i = 0; i < 8; i++)
         {
             if (buffer[i] != 999)
@@ -73,5 +96,20 @@ int main(int argc, char* argv[])
         }
         std::cout << " |" << std::endl;
     }
+
+    // Generate bottom.
+    // ------------------------------------------------------
+    std::cout << "╚";                                           // Cornerpiece
+    if (lineNums) std::cout << "══" << "══════" << "╩";         // Line numbers
+    for (int i = 0; i < rows; i++) {
+        std::cout << "══" << "════════════════════════" << "╩";}// Hex rows
+    for (int i = 0; i < rows; i++) {
+        std::cout << "══" << "════════";                        // Char rows
+        if (i != (rows -1)) std::cout << "╩";}
+    std::cout << "╝" << std::endl;                              // Cornerpiece and final line break
+
+    // Cleanup time
+    // ------------------------------------------------------
     file.close();
+    return 0;
 }
