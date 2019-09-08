@@ -18,6 +18,12 @@ void showHelp()
     exit(0);
 }
 
+void showVersion()
+{
+    std::cout << "HexMe version 1.1" << std::endl;
+    exit(0);
+}
+
 void rowsMaxError()
 {
     std::cout << "ERROR: The maxium amount of columns is 4." << std::endl;
@@ -51,18 +57,16 @@ void parseArgs(int &argc, char** (&argv), int &rows, char* &fileUrl, bool &showL
     if (argc == 1) noFileError();
 
     // Parse arguments.
-    for (int i = 1; i < (argc - 1); i++)
+    for (int i = 1; i < argc; i++)
     {
         arg = argv[i];
 
         // -h 'help' option
         if (arg == "-h") showHelp();
+        else if (arg == "--help") showHelp();
 
-        else if (arg == "-v")
-        {
-            std::cout << "HexMe version 1.1" << std::endl;
-            exit(0);
-        }
+        else if (arg == "-v") showVersion();
+        else if (arg == "--version") showVersion();
 
         // -c 'column amount' options
         else if (arg == "-c")
@@ -78,6 +82,9 @@ void parseArgs(int &argc, char** (&argv), int &rows, char* &fileUrl, bool &showL
 
         // -n 'hide line numbers' option
         else if (arg == "-n") showLineNr = false;
+
+        // Last argument if file, thus ignored.
+        else if (i == argc) {}
 
         // Everthing else is not a valid argument.
         else argumentError(argv[i]);

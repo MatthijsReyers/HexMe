@@ -1,16 +1,18 @@
 
 // 18-05-2019 Matthijs Reyers
 // 
+// Compile command:
+// g++ -I ./ -o hexme main.cpp
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <thread>
 #include <stdio.h>
-#include <colours.h>
 
-// Custom argument parser.
+// Custom headers.
 #include <argparser.h>
+#include <colours.h>
 
 void printLineNum(int &counter, int rows)
 {
