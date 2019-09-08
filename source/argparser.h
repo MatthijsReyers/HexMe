@@ -15,6 +15,19 @@ int charToInt(char* inputchar)
 
 void showHelp()
 {
+    std::cout << "HexMe version 1.1" << std::endl;
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Usage: hexme [OPTION]... [FILE]..." << std::endl;
+    std::cout << std::endl;
+    std::cout << "Debug related options:" << std::endl;
+    std::cout << "-h, --help        Shows this menu." << std::endl;
+    std::cout << "-v, --version     Gives version nr of this installation." << std::endl;
+    std::cout << std::endl;
+    std::cout << "Program options:" << std::endl;
+    std::cout << "-n                Do not show line numbers." << std::endl;
+    std::cout << "-c [int]          How many collums to use for listing" << std::endl;
+    std::cout << "                  bytes, (default = 2, max = 4)." << std::endl;
+    
     exit(0);
 }
 
@@ -35,7 +48,6 @@ void rowsMinError()
     std::cout << "ERROR: The minimum amount of columns is 1." << std::endl;
     exit(1);
 }
-
 
 void argumentError(char* arg)
 {
