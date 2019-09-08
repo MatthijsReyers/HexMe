@@ -1,0 +1,1 @@
+sudo cp hexme /usr/bin

@@ -58,6 +58,12 @@ void parseArgs(int &argc, char** (&argv), int &rows, char* &fileUrl, bool &showL
         // -h 'help' option
         if (arg == "-h") showHelp();
 
+        else if (arg == "-v")
+        {
+            std::cout << "HexMe version 1.1" << std::endl;
+            exit(0);
+        }
+
         // -c 'column amount' options
         else if (arg == "-c")
         {
