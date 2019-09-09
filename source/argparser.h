@@ -15,7 +15,7 @@ int charToInt(char* inputchar)
 
 void showHelp()
 {
-    std::cout << "HexMe version 1.1" << std::endl;
+    std::cout << "HexMe version 1.2" << std::endl;
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Usage: hexme [OPTION]... [FILE]..." << std::endl;
     std::cout << std::endl;
@@ -34,7 +34,7 @@ void showHelp()
 
 void showVersion()
 {
-    std::cout << "HexMe version 1.1" << std::endl;
+    std::cout << "HexMe version 1.2" << std::endl;
     exit(0);
 }
 
