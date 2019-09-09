@@ -97,7 +97,7 @@ void parseArgs(int &argc, char** (&argv), int &rows, char* &fileUrl, bool &showL
         else if (arg == "-n") showLineNr = false;
 
         // Last argument if file, thus ignored.
-        else if (i == argc) {}
+        else if (i == (argc-1)) {}
 
         // Everthing else is not a valid argument.
         else argumentError(argv[i]);

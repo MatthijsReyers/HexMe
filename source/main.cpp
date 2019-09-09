@@ -13,6 +13,7 @@
 // Custom headers.
 #include <argparser.h>
 #include <colours.h>
+#include <headerdetect.h>
 
 void printLineNum(int &counter, int rows)
 {
@@ -97,20 +98,34 @@ void printRowChar(int (&buffer)[32], int row)
 
 int main(int argc, char* argv[])
 {
-    // Parse command line arguments.
+    // Main variables.
     // ------------------------------------------------------
     int rows = 2;
     char* fileUrl;
     bool lineNums = true;
+    std::ifstream file;
+    std::string fileheader;
+    int buffer[32];
+    int rowCount = 0;
+
+    // Parse command line arguments.
+    // ------------------------------------------------------
     parseArgs(argc, argv, rows, fileUrl, lineNums);
     
     // Open file.
     // ------------------------------------------------------
-    std::ifstream file;
     file.open(fileUrl);
     if (!file) {printf("ERROR: The specified file does not exist.\n"); return 1;}
 
-    // Generate top.
+    // Generate top-text.
+    // ------------------------------------------------------
+    std::cout << "Showing file: " << fileUrl;
+    loadBuffer(file, buffer, rows);
+    fileheader = getFileHeader(buffer);
+    if (fileheader != "") std::cout << " | Found file header: " << fileheader;
+    std::cout << std::endl;
+
+    // Generate top-lines.
     // ------------------------------------------------------
     std::cout << "╔";                                           // Cornerpiece
     if (lineNums) std::cout << "══" << "══════" << "╦";         // Line numbers
@@ -123,8 +138,6 @@ int main(int argc, char* argv[])
 
     // Generate Rows
     // ------------------------------------------------------
-    int buffer[32];
-    int rowCount = 0;
     while (file.good())
     {
         // Starting line.
@@ -132,9 +145,6 @@ int main(int argc, char* argv[])
 
         // Print row numbers.
         if (lineNums) printLineNum(rowCount, rows);
-
-        // Load bytes into buffer.
-        loadBuffer(file, buffer, rows);
 
         // Print hex rows.
         for (int i = 0; i < rows; i++) printRowHex(buffer, i);
@@ -144,6 +154,9 @@ int main(int argc, char* argv[])
         
         // Line break
         std::cout << std::endl;
+
+        // Load next bytes into buffer.
+        loadBuffer(file, buffer, rows);
     }
 
     // Generate bottom.
@@ -160,5 +173,4 @@ int main(int argc, char* argv[])
     // Cleanup time
     // ------------------------------------------------------
     file.close();
-    return 0;
 }
