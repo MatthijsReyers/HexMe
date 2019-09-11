@@ -1,5 +1,5 @@
 
-// 18-05-2019 Matthijs Reyers
+// 07-09-2019 Matthijs Reyers
 // 
 // Compile command:
 // g++ -I ./ -o hexme main.cpp
@@ -15,7 +15,7 @@
 #include <colours.h>
 #include <headerdetect.h>
 
-void printLineNum(int &counter, int rows)
+void printLineNum(int &counter, int columns)
 {
     std::string filler;
     if (counter < 16) filler = "00000";
@@ -24,18 +24,18 @@ void printLineNum(int &counter, int rows)
     else if (counter < 65536) filler = "00";
     else if (counter < 1048576) filler = "0";
     std::cout << std::hex << filler << counter << " ║ ";
-    counter = counter + (8 * rows);
+    counter = counter + (8 * columns);
 }
 
 // Function for loading bytes into an int buffer.
 // ----------------------------------------------------------
-void loadBuffer(std::ifstream &file, int (&buffer)[32], int rows)
+void loadBuffer(std::ifstream &file, int (&buffer)[32], int columns)
 {
-    int Max = rows * 8;
+    int Max = columns * 8;
     for (int i = 0; i < Max; i++)
     {
         if (file.good()) buffer[i] = file.get();
-        else buffer[i] = 999;
+        else buffer[i] = -1;
     }
 }
 
@@ -43,22 +43,22 @@ void loadBuffer(std::ifstream &file, int (&buffer)[32], int rows)
 // ----------------------------------------------------------
 std::string getHexColour(int hex)
 {
-    if (hex == 0) return blue;          // NULL byte
+    if (hex == 0) return red;          // NULL byte
     else if (hex < 32) return green;    // non character bytes
-    else if (hex > 126) return red;     // bytes outside ascii range
+    else if (hex > 126) return blue;     // bytes outside ascii range
     else return reset;                  // character bytes
 }
 
 // Function for outputing int buffer to console in hex form.
 // ----------------------------------------------------------
-void printRowHex(int (&buffer)[32], int row)
+void printRowHex(int (&buffer)[32], int column)
 {
     std::string colour;
-    int rangeMin = 8 * row;
-    int rangeMax = 8 * (row + 1);
+    int rangeMin = 8 * column;
+    int rangeMax = 8 * (column + 1);
     for (int i = rangeMin; i < rangeMax; i++)
     {   
-        if (buffer[i] != 999 && buffer[i] != -1)
+        if (buffer[i] != -1)
         {
             colour =  getHexColour(buffer[i]);
             if (buffer[i] < 16) std::cout << colour << "0" << std::hex << buffer[i] << " ";
@@ -72,25 +72,28 @@ void printRowHex(int (&buffer)[32], int row)
 
 // Function for outputing int buffer to console in char form.
 // ----------------------------------------------------------
-void printRowChar(int (&buffer)[32], int row)
+void printRowChar(int (&buffer)[32], int column)
 {
     char converted;
-    int rangeMin = 8 * row;
-    int rangeMax = 8 * (row + 1);
+    int rangeMin = 8 * column;
+    int rangeMax = 8 * (column + 1);
     for (int i = rangeMin; i < rangeMax; i++)
     {
-        // Check if file has not ended and char is not an endl.
-        if (buffer[i] > 126 || buffer[i] < 32)
+        if (buffer[i] == -1)
         {
-            // If the file has ended or we find an invisible char, just print a space.
+            // If the file has ended print a space.
             std::cout << " ";
+        }
+        else if (buffer[i] >= 127 || buffer[i] <= 32)
+        {
+            // If it is an invisible or non char, just print a dot.
+            std::cout << ".";
         }
         else
         {
             // Convert int to char and print.
             converted = (char)buffer[i];
-            if (converted == 10) std::cout << "_";
-            else std::cout << converted;
+            std::cout << converted;
         }   
     }
     std::cout << " ║ ";
@@ -100,17 +103,17 @@ int main(int argc, char* argv[])
 {
     // Main variables.
     // ------------------------------------------------------
-    int rows = 2;
+    int columns = 2;
     char* fileUrl;
     bool lineNums = true;
     std::ifstream file;
     std::string fileheader;
     int buffer[32];
-    int rowCount = 0;
+    int columnCount = 0;
 
     // Parse command line arguments.
     // ------------------------------------------------------
-    parseArgs(argc, argv, rows, fileUrl, lineNums);
+    parseArgs(argc, argv, columns, fileUrl, lineNums);
     
     // Open file.
     // ------------------------------------------------------
@@ -120,54 +123,56 @@ int main(int argc, char* argv[])
     // Generate top-text.
     // ------------------------------------------------------
     std::cout << "Showing file: " << fileUrl;
-    loadBuffer(file, buffer, rows);
+    loadBuffer(file, buffer, 4);
+    file.seekg(0);
     fileheader = getFileHeader(buffer);
     if (fileheader != "") std::cout << " | Found file header: " << fileheader;
     std::cout << std::endl;
+    
 
     // Generate top-lines.
     // ------------------------------------------------------
     std::cout << "╔";                                           // Cornerpiece
     if (lineNums) std::cout << "══" << "══════" << "╦";         // Line numbers
-    for (int i = 0; i < rows; i++) {
-        std::cout << "══" << "═══════════════════════" << "╦";}// Hex rows
-    for (int i = 0; i < rows; i++) {
-        std::cout << "══" << "════════";                        // Char rows
-        if (i != (rows -1)) std::cout << "╦";}
+    for (int i = 0; i < columns; i++) {
+        std::cout << "══" << "═══════════════════════" << "╦";} // Hex columns
+    for (int i = 0; i < columns; i++) {
+        std::cout << "══" << "════════";                        // Char columns
+        if (i != (columns -1)) std::cout << "╦";}
     std::cout << "╗" << std::endl;                              // Cornerpiece and line break
 
-    // Generate Rows
+    // Generate columns
     // ------------------------------------------------------
     while (file.good())
     {
+        // Load next bytes into buffer.
+        loadBuffer(file, buffer, columns);
+
         // Starting line.
         std::cout << "║ ";
 
         // Print row numbers.
-        if (lineNums) printLineNum(rowCount, rows);
+        if (lineNums) printLineNum(columnCount, columns);
 
-        // Print hex rows.
-        for (int i = 0; i < rows; i++) printRowHex(buffer, i);
+        // Print hex columns.
+        for (int i = 0; i < columns; i++) printRowHex(buffer, i);
         
-        // Print char rows.
-        for (int i = 0; i < rows; i++) printRowChar(buffer, i);
+        // Print char columns.
+        for (int i = 0; i < columns; i++) printRowChar(buffer, i);
         
         // Line break
         std::cout << std::endl;
-
-        // Load next bytes into buffer.
-        loadBuffer(file, buffer, rows);
     }
 
     // Generate bottom.
     // ------------------------------------------------------
     std::cout << "╚";                                           // Cornerpiece
     if (lineNums) std::cout << "══" << "══════" << "╩";         // Line numbers
-    for (int i = 0; i < rows; i++) {
-        std::cout << "══" << "═══════════════════════" << "╩";}// Hex rows
-    for (int i = 0; i < rows; i++) {
-        std::cout << "══" << "════════";                        // Char rows
-        if (i != (rows -1)) std::cout << "╩";}
+    for (int i = 0; i < columns; i++) {
+        std::cout << "══" << "═══════════════════════" << "╩";} // Hex columns
+    for (int i = 0; i < columns; i++) {
+        std::cout << "══" << "════════";                        // Char columns
+        if (i != (columns -1)) std::cout << "╩";}
     std::cout << "╝" << std::endl;                              // Cornerpiece and final line break
 
     // Cleanup time
