@@ -10,7 +10,7 @@ bool checkForHeader(int* buffer, std::vector<int> header, int headerLength)
     return foundHeader;
 }
 
-std::string getFileHeader(std::fstream &file)
+std::string getFileHeader(std::fstream &file, int &fileHeaderLen)
 {
     std::map<std::string, std::vector<int>> headers;
     
@@ -45,6 +45,7 @@ std::string getFileHeader(std::fstream &file)
     {
         if (checkForHeader(buffer, item.second, item.second.size()))
         {
+            fileHeaderLen = item.second.size();
             return item.first;
         }
     }

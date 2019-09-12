@@ -2,7 +2,7 @@
 // 10-09-2019 Matthijs Reyers
 // 
 // Compile command:
-// g++ -I ./ -o hexme main.cpp
+// g++ -I ./ -o hexme main.cpp -lncurses
 
 // #include <string>
 // #include <thread>
@@ -25,9 +25,11 @@ int winX; int winY;
 int scrX; int scrY;
 int activeX = 0; 
 int activeY = 0;
+int activeRow = 0;
 int collumns;
-int topNr = 0;
+int fileHeaderLen = 0;
 bool running = true;
+int key;
 
 void convertActive(int &activeX, int &activeY)
 {
@@ -37,7 +39,7 @@ void convertActive(int &activeX, int &activeY)
 const char intToChar(int &inNumber)
 {
     // Once the file ends, just print spaces.
-    if (inNumber == -1) return ' ';
+    if (inNumber < 0) return ' ';
 
     // Invisible or non char, just print a dot.
     else if (inNumber >= 127 || inNumber <= 32) return '.';
@@ -59,6 +61,14 @@ const char* intToHexStr(int inNumber, int padding)
     std::string result(stream.str());
     const char* out = result.c_str();
     return out;
+}
+
+int colorByte(int byte)
+{
+    if (byte == 0) return 1; // RED
+    else if (byte <= 32) return 3; // GREEN
+    else if (byte >= 127) return 2; // BLUE
+    else return 0; // NO COLOR
 }
 
 void winResize(int &winX, int &winY, int &srcX, int &srcY, int &collumns)
@@ -151,9 +161,9 @@ void drawScreen(int &winX, int &winY, int &collumns, char* &fileName, std::strin
     mvaddstr(winY,winX,"╝");
 }
 
-void drawLineNr(int &topNr, int &srcX, int &srcY)
+void drawLineNr(int &srcX, int &srcY, int &Collumns, int &activeRow)
 {
-    int tempNr = topNr;
+    int tempNr = activeRow; // * Collumns * 8;
     for (int i = 0; i < (scrY - 4); i++)
     {
         mvaddstr(2+i,2,intToHexStr(tempNr,6));
@@ -161,16 +171,15 @@ void drawLineNr(int &topNr, int &srcX, int &srcY)
     }
 }
 
-void drawBytes(int &collumns, int &winY, std::fstream &file)
+void drawBytes(int &collumns, int &winY, std::fstream &file, int &activeRow)
 {
-    int activeLine = 0;
-    int byte;
+    int byte; int color;
     const char* byteHex;
     const char* byteChar;
 
     // Seek file read head to right byte.
     // ------------------------------------------------------
-    file.seekg(activeLine * collumns * 8);    
+    file.seekg(activeRow * collumns * 8);    
 
     // Place hex bytes and chars.
     // ------------------------------------------------------
@@ -181,24 +190,29 @@ void drawBytes(int &collumns, int &winY, std::fstream &file)
             for (int i = 0; i < 8; i++)
             {
                 // Read byte
-                byte = file.get();
+                if (file.good()) byte = file.get();
+                else byte = -1;
                 byteHex = intToHexStr(byte,2);
                 std::string sym(1, intToChar(byte));
                 byteChar = sym.c_str();
 
-                // Place
+                // Special coloring for file header bytes.
+                // Color byte
+
+                color = colorByte(byte);
+                attrset(COLOR_PAIR(color));
+
+                // Place hex byte
                 mvaddstr( (2+r), (11 + c*26 + i*3), byteHex);
+
+                attrset(COLOR_PAIR(5));
+
+                // Place char
                 mvaddstr( (2+r), (11 + collumns*26 + c*11 + i), byteChar);
             }   
         }
     }
 }
-
-// int main()
-// {
-//     std::cout << intToHexStr(555,2) << std::endl;
-// }
-
 
 int main(int argc, char* argv[])
 {
@@ -214,14 +228,30 @@ int main(int argc, char* argv[])
 
     // Detect file header.
     // ------------------------------------------------------
-    std::string fileHeader = getFileHeader(file);
+    std::string fileHeader = getFileHeader(file, fileHeaderLen);
 
     // Start ncurses and determine terminal size.
     // ------------------------------------------------------
     setlocale(LC_ALL, "");
     initscr();
+
+    //
+    use_default_colors();
+    start_color();
+
+    // Set up colours.
+    // ------------------------------------------------------
+    init_pair(0, -1, -1);
+    init_pair(1, COLOR_RED, -1);
+    init_pair(2, COLOR_BLUE, -1);
+    init_pair(3, COLOR_GREEN, -1);
+    init_pair(4, COLOR_YELLOW, -1);
+    init_pair(5, -1, -1);
+
+    noecho();
+    keypad(stdscr, true);
     winResize(winX, winY, scrX, scrY, collumns);
-    int key;
+    
 
     // Main loops
     // ------------------------------------------------------
@@ -232,8 +262,8 @@ int main(int argc, char* argv[])
 
         // Start by drawing screen
         drawScreen(winX, winY, collumns, fileName, fileHeader);
-        drawLineNr(topNr, scrX, scrY);
-        drawBytes(collumns, winY, file);
+        drawLineNr(scrX, scrY, collumns, activeRow);
+        drawBytes(collumns, winY, file, activeRow);
         refresh();
         
         // Handle user input
@@ -247,12 +277,18 @@ int main(int argc, char* argv[])
                 break;
             
             // Shutdown program when [esc] is pressed.
-            case 27: // == KEY_ESC 
-                running = false;
+            //case 27: // == KEY_ESC 
+                //running = false;
+                //break;
+
+            case KEY_DOWN:
+                activeRow++;
                 break;
 
-            case KEY_UP: break;
-            case KEY_DOWN: break;
+            case KEY_UP: 
+                if (activeRow != 0) activeRow--;
+                break;
+
             case KEY_LEFT: break;
             case KEY_RIGHT:break;
             default: break;
