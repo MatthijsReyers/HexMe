@@ -28,12 +28,14 @@ int activeY = 0;
 int activeRow = 0;
 int collumns;
 int fileHeaderLen = 0;
+std::string fileHeader;
 bool running = true;
 int key;
+int absoluteIndex;
 
-void convertActive(int &activeX, int &activeY)
+void convertActive(int &activeX, int &activeY, int &activeRow, int &rows, int &absoluteIndex)
 {
-    //
+     
 }
 
 const char intToChar(int &inNumber)
@@ -50,6 +52,10 @@ const char intToChar(int &inNumber)
 
 const char* intToHexStr(int inNumber, int padding)
 {
+    // Just catch -1 drawing, which should not happen.
+    if (inNumber < 0) return "  ";
+
+    // Actually convert the byte to a string.
     std::stringstream stream;
     int counter = 0;
     for (int i = 0; i < padding; i++)
@@ -171,7 +177,7 @@ void drawLineNr(int &srcX, int &srcY, int &Collumns, int &activeRow)
     }
 }
 
-void drawBytes(int &collumns, int &winY, std::fstream &file, int &activeRow)
+void drawBytes(int &collumns, int &winY, std::fstream &file, int fileHeaderLen, int &activeRow, int &activeX, int &activeY)
 {
     int byte; int color;
     const char* byteHex;
@@ -179,6 +185,7 @@ void drawBytes(int &collumns, int &winY, std::fstream &file, int &activeRow)
 
     // Seek file read head to right byte.
     // ------------------------------------------------------
+    file.clear();
     file.seekg(activeRow * collumns * 8);    
 
     // Place hex bytes and chars.
@@ -191,24 +198,29 @@ void drawBytes(int &collumns, int &winY, std::fstream &file, int &activeRow)
             {
                 // Read byte
                 if (file.good()) byte = file.get();
-                else byte = -1;
+                else byte = -1; 
                 byteHex = intToHexStr(byte,2);
                 std::string sym(1, intToChar(byte));
                 byteChar = sym.c_str();
 
-                // Special coloring for file header bytes.
-                // Color byte
+                // Color byte if it is the selected byte.
+                if (activeX == r && activeY == i + c*8) attrset(COLOR_PAIR(4));
 
-                color = colorByte(byte);
-                attrset(COLOR_PAIR(color));
+                // Special coloring for file header bytes.
+                else if ((r + activeRow) * collumns * 8 + 8 * c + i < fileHeaderLen) attrset(COLOR_PAIR(6));
+
+                // Otherwise determine byte color with 'colorByte()' function.
+                else attrset(COLOR_PAIR(colorByte(byte)));
 
                 // Place hex byte
                 mvaddstr( (2+r), (11 + c*26 + i*3), byteHex);
 
-                attrset(COLOR_PAIR(5));
+                if (activeX == r && activeY == i + c*8) attrset(COLOR_PAIR(4));
+                else attrset(COLOR_PAIR(5));
 
                 // Place char
                 mvaddstr( (2+r), (11 + collumns*26 + c*11 + i), byteChar);
+                attrset(COLOR_PAIR(5));
             }   
         }
     }
@@ -228,14 +240,12 @@ int main(int argc, char* argv[])
 
     // Detect file header.
     // ------------------------------------------------------
-    std::string fileHeader = getFileHeader(file, fileHeaderLen);
+    getFileHeader(file, fileHeader, fileHeaderLen);
 
     // Start ncurses and determine terminal size.
     // ------------------------------------------------------
     setlocale(LC_ALL, "");
     initscr();
-
-    //
     use_default_colors();
     start_color();
 
@@ -245,25 +255,26 @@ int main(int argc, char* argv[])
     init_pair(1, COLOR_RED, -1);
     init_pair(2, COLOR_BLUE, -1);
     init_pair(3, COLOR_GREEN, -1);
-    init_pair(4, COLOR_YELLOW, -1);
+    init_pair(4, COLOR_BLACK, COLOR_WHITE);
     init_pair(5, -1, -1);
+    init_pair(6, COLOR_CYAN, COLOR_BLACK);
 
     noecho();
     keypad(stdscr, true);
     winResize(winX, winY, scrX, scrY, collumns);
     
+    drawScreen(winX, winY, collumns, fileName, fileHeader);
 
     // Main loops
     // ------------------------------------------------------
     while (running)
     {
         // Clean up old stuff
-        clear();
+        // clear();
 
-        // Start by drawing screen
-        drawScreen(winX, winY, collumns, fileName, fileHeader);
+        // Start by drawing screen.
         drawLineNr(scrX, scrY, collumns, activeRow);
-        drawBytes(collumns, winY, file, activeRow);
+        drawBytes(collumns, winY, file, fileHeaderLen, activeRow, activeX, activeY);
         refresh();
         
         // Handle user input
@@ -272,8 +283,11 @@ int main(int argc, char* argv[])
         {
             // Handle terminal resize events.
             case KEY_RESIZE: 
+                absoluteIndex = (activeRow + activeY) * collumns * 8 + (activeX + 1);
                 winResize(winX, winY, scrX, scrY, collumns); 
-                convertActive(activeX, activeY);
+                convertActive(activeX, activeY, activeRow, collumns, absoluteIndex);
+                clear();
+                drawScreen(winX, winY, collumns, fileName, fileHeader);
                 break;
             
             // Shutdown program when [esc] is pressed.
@@ -282,15 +296,28 @@ int main(int argc, char* argv[])
                 //break;
 
             case KEY_DOWN:
-                activeRow++;
+                if (activeX <= winY-4) activeX++;
+                else activeRow++;
                 break;
 
             case KEY_UP: 
-                if (activeRow != 0) activeRow--;
+                if (activeX > 0) activeX--;
+                else if (activeRow > 0) { activeRow--;}
                 break;
 
-            case KEY_LEFT: break;
-            case KEY_RIGHT:break;
+            case KEY_LEFT: 
+                if (activeY > 0) activeY--;
+                else if (activeX > 0) {activeX--; activeY = collumns * 8 - 1;}
+                break;
+
+            case KEY_RIGHT:
+                if (activeY < collumns * 8 - 1) activeY++;
+                else if (activeX < 9999) {
+                    if (activeX <= winY-4) activeX++;
+                    else activeRow++;
+                    activeY = 0;}
+                break;
+
             default: break;
         }
     }

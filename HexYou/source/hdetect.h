@@ -10,7 +10,7 @@ bool checkForHeader(int* buffer, std::vector<int> header, int headerLength)
     return foundHeader;
 }
 
-std::string getFileHeader(std::fstream &file, int &fileHeaderLen)
+void getFileHeader(std::fstream &file, std::string &fileHeader, int &fileHeaderLen)
 {
     std::map<std::string, std::vector<int>> headers;
     
@@ -29,16 +29,17 @@ std::string getFileHeader(std::fstream &file, int &fileHeaderLen)
     headers["ICON (Computer Icon format)"] = {0,1,0,0};
     headers["RAR (rar archive version 1.5 - 5.0)"] = {0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00};
     headers["RAR (rar archive version 5.0+)"] = {0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00};
-    headers["WAV (Waveform Audio File Format)"] = {0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45};
+    headers["WAV (Waveform Audio File format)"] = {0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45};
     headers["AVI (Audio Video Interleave video format)"] = {0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x41, 0x56, 0x49, 0x20};
     headers["ISO (ISO9660 CD/DVD image file)"] = {0x43, 0x44, 0x30, 0x30, 0x31};
     headers["MP3 (MPEG-1 Layer 3)"] = {0xFF, 0xFB};
     headers["MP3 (MPEG-1 Layer 3 with an ID3v2 container)"] = {0x49, 0x44, 0x33};
+    headers["XML (eXtensible Markup Language)"] = {0x3c, 0x3f, 0x78, 0x6d, 0x6c, 0x20};
+    headers["macOS file Alias (Symbolic link)"] = {0x62, 0x6F, 0x6F, 0x6B, 0x00, 0x00, 0x00, 0x00, 0x6D, 0x61, 0x72, 0x6B, 0x00, 0x00, 0x00, 0x00};
 
     // Fill buffer with first 32 bytes.
     int buffer[32];
     for (int i = 0; i < 32; i++) {buffer[i] = file.get();}
-    file.seekg(0);
 
     // Linear search all headers.
     for (auto const &item : headers)
@@ -46,10 +47,12 @@ std::string getFileHeader(std::fstream &file, int &fileHeaderLen)
         if (checkForHeader(buffer, item.second, item.second.size()))
         {
             fileHeaderLen = item.second.size();
-            return item.first;
+            fileHeader = item.first;
+            return;
         }
     }
     
     // Return nothing if nothing found.
-    return "";
+    fileHeader = "";
+    fileHeaderLen = 0;
 }
