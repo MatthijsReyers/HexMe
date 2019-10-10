@@ -1,181 +1,331 @@
 
-// 07-09-2019 Matthijs Reyers
+// 10-09-2019 Matthijs Reyers
 // 
 // Compile command:
-// g++ -I ./ -o hexme main.cpp
+// g++ -I ./ -o hexme main.cpp -lncurses
 
+// #include <string>
+// #include <thread>
+// #include <stdio.h>
+
+// Main headers
+#include <curses.h>
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <thread>
-#include <stdio.h>
+#include <iomanip>
+#include <charconv>
+#include <cmath>
 
-// Custom headers.
-#include <argparser.h>
-#include <colours.h>
-#include <headerdetect.h>
+// Custom headers
+#include <hdetect.h>
+#include <argparse.h>
 
-void printLineNum(int &counter, int columns)
+// Main variables
+int winX; int winY;
+int scrX; int scrY;
+int activeX = 0; 
+int activeY = 0;
+int activeRow = 0;
+int collumns;
+int fileHeaderLen = 0;
+std::string fileHeader;
+bool running = true;
+int key;
+int absoluteIndex;
+
+const char intToChar(int &inNumber)
 {
-    std::string filler;
-    if (counter < 16) filler = "00000";
-    else if (counter < 256) filler = "0000";
-    else if (counter < 4096) filler = "000";
-    else if (counter < 65536) filler = "00";
-    else if (counter < 1048576) filler = "0";
-    std::cout << std::hex << filler << counter << " ║ ";
-    counter = counter + (8 * columns);
+    // Once the file ends, just print spaces.
+    if (inNumber < 0) return ' ';
+
+    // Invisible or non char, just print a dot.
+    else if (inNumber >= 127 || inNumber <= 32) return '.';
+
+    // Convert int to char.
+    else return (char)inNumber;
 }
 
-// Function for loading bytes into an int buffer.
-// ----------------------------------------------------------
-void loadBuffer(std::ifstream &file, int (&buffer)[32], int columns)
+const char* intToHexStr(int inNumber, int padding)
 {
-    int Max = columns * 8;
-    for (int i = 0; i < Max; i++)
+    // Just catch -1 drawing, which should not happen.
+    if (inNumber < 0) return "  ";
+
+    // Actually convert the byte to a string.
+    std::stringstream stream;
+    int counter = 0;
+    for (int i = 0; i < padding; i++)
     {
-        if (file.good()) buffer[i] = file.get();
-        else buffer[i] = -1;
+        if (inNumber < counter) {stream << "0";}
+        counter = counter + 16 * std::pow(16, i);
     }
+    stream << std::hex << inNumber;
+    std::string result(stream.str());
+    const char* out = result.c_str();
+    return out;
 }
 
-// 
-// ----------------------------------------------------------
-std::string getHexColour(int hex)
+int colorByte(int byte)
 {
-    if (hex == 0) return red;          // NULL byte
-    else if (hex < 32) return green;    // non character bytes
-    else if (hex > 126) return blue;     // bytes outside ascii range
-    else return reset;                  // character bytes
+    if (byte == 0) return 1; // RED
+    else if (byte <= 32) return 3; // GREEN
+    else if (byte >= 127) return 2; // BLUE
+    else return 0; // NO COLOR
 }
 
-// Function for outputing int buffer to console in hex form.
-// ----------------------------------------------------------
-void printRowHex(int (&buffer)[32], int column)
+void winResize(int &winX, int &winY, int &srcX, int &srcY, int &collumns, int &activeX, int &activeY, int &activeRow, int &absoluteIndex)
 {
-    std::string colour;
-    int rangeMin = 8 * column;
-    int rangeMax = 8 * (column + 1);
-    for (int i = rangeMin; i < rangeMax; i++)
-    {   
-        if (buffer[i] != -1)
-        {
-            colour =  getHexColour(buffer[i]);
-            if (buffer[i] < 16) std::cout << colour << "0" << std::hex << buffer[i] << " ";
-            else std::cout << colour << std::hex << buffer[i] << " ";
-        }
-        // If the file has ended just print spaces.
-        else std::cout << "   ";
-    }
-    std::cout << reset << "║ "; 
-}
-
-// Function for outputing int buffer to console in char form.
-// ----------------------------------------------------------
-void printRowChar(int (&buffer)[32], int column)
-{
-    char converted;
-    int rangeMin = 8 * column;
-    int rangeMax = 8 * (column + 1);
-    for (int i = rangeMin; i < rangeMax; i++)
+    // Get size of terminal to get max rows.
+    // ------------------------------------------------------
+    int x, y;
+    getmaxyx(stdscr, y, x);
+    srcX = x; srcY = y;
+    
+    // Calculate the amount of collumns that can be shown on
+    // screen (maxes out at 6 collumns).
+    // ------------------------------------------------------
+    int lineNrs = 6 + 2 + 1;
+    int collumn = (8 * 3 + 2) + (8 + 2 + 1);
+    int collumnCount = 0;
+    int lefoverX = srcX - 2 - lineNrs;
+    while (lefoverX >= collumn && collumnCount != 6)
     {
-        if (buffer[i] == -1)
-        {
-            // If the file has ended print a space.
-            std::cout << " ";
-        }
-        else if (buffer[i] >= 127 || buffer[i] <= 32)
-        {
-            // If it is an invisible or non char, just print a dot.
-            std::cout << ".";
-        }
-        else
-        {
-            // Convert int to char and print.
-            converted = (char)buffer[i];
-            std::cout << converted;
-        }   
+        lefoverX = lefoverX - collumn;
+        collumnCount++;
     }
-    std::cout << " ║ ";
+    
+    // Finally put values into pointers.
+    winX = lineNrs + (collumnCount * collumn);
+    winY = scrY - 2;
+    collumns = collumnCount;
+
+    // Now set the cursor to the proper location again as not to change bytes.
+    // ------------------------------------------------------
+    activeX = (absoluteIndex - (activeRow * collumns * 8)) / (8 * collumns);
+    activeX = (absoluteIndex - (activeRow * collumns * 8)) % (8 * collumns);
+}
+
+void drawScreen(int &winX, int &winY, int &collumns, char* &fileName, std::string &fileHeader)
+{
+    mvaddstr(0,0,fileName);
+
+    // Top & bottom lines.
+    for (int i = 0; i != winX; i++)
+    {
+        mvaddstr(1, i, "═");
+        mvaddstr(winY, i, "═");
+    }
+
+    // Side lines.
+    for (int y = 1; y != winY; y++)
+    {
+        // Outerbox lines.
+        mvaddstr(y, 0, "║");
+        mvaddstr(y, winX, "║");
+        mvaddstr(y, 0, "║");
+        mvaddstr(y, winX, "║");
+
+        // Line numbers.
+        mvaddstr(y, 9, "║");
+
+        // Hex rows
+        mvaddstr(y, 11 + collumns * (8 * 3) + (collumns - 1) * 2, "║");
+
+        // Line numbers.
+        mvaddstr(y, 9, "║");
+
+        // Hex rows
+        mvaddstr(y, 11 + collumns * (8 * 3) + (collumns - 1) * 2, "║");
+
+        // Inner hex rows
+        for (int c = 1; c < collumns; c++)
+        {
+            mvaddstr(y,(9 + c * 26),"│");
+            mvaddstr(y,(9 + collumns * 26 + c * 11),"│");
+        }
+    }
+
+    // Connecting pieces.
+    mvaddstr(1,9,"╦");
+    mvaddstr(1,11 + collumns * (8 * 3) + (collumns - 1) * 2,"╦");
+    mvaddstr(winY,9,"╩");
+    mvaddstr(winY,11 + collumns * (8 * 3) + (collumns - 1) * 2,"╩");
+    
+    // Inner connecting pieces.
+    for (int c = 1; c < collumns; c++)
+    {
+        mvaddstr(1,(9 + c * 26),"╤");
+        mvaddstr(1,(9 + collumns * 26 + c * 11),"╤");
+    
+        mvaddstr(winY,(9 + c * 26),"╧");
+        mvaddstr(winY,(9 + collumns * 26 + c * 11),"╧");
+    }
+
+    // Corner pieces.
+    mvaddstr(1,0,"╔");
+    mvaddstr(1,winX,"╗");
+    mvaddstr(winY,0,"╚");
+    mvaddstr(winY,winX,"╝");
+}
+
+void drawLineNr(int &srcX, int &srcY, int &Collumns, int &activeRow)
+{
+    int tempNr = activeRow; // * Collumns * 8;
+    for (int i = 0; i < (scrY - 4); i++)
+    {
+        mvaddstr(2+i,2,intToHexStr(tempNr,6));
+        tempNr++;
+    }
+}
+
+void drawBytes(int &collumns, int &winY, std::fstream &file, int fileHeaderLen, int &activeRow, int &activeX, int &activeY)
+{
+    int byte; int color;
+    const char* byteHex;
+    const char* byteChar;
+
+    // Seek file read head to right byte.
+    // ------------------------------------------------------
+    file.clear();
+    file.seekg(activeRow * collumns * 8);    
+
+    // Place hex bytes and chars.
+    // ------------------------------------------------------
+    for (int r = 0; r < (winY - 2); r++)
+    {
+        for (int c = 0; c < collumns; c++)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                // Read byte
+                if (file.good()) byte = file.get();
+                else byte = -1; 
+                byteHex = intToHexStr(byte,2);
+                std::string sym(1, intToChar(byte));
+                byteChar = sym.c_str();
+
+                // Color byte if it is the selected byte.
+                if (activeX == r && activeY == i + c*8) attrset(COLOR_PAIR(4));
+
+                // Special coloring for file header bytes.
+                else if ((r + activeRow) * collumns * 8 + 8 * c + i < fileHeaderLen) attrset(COLOR_PAIR(6));
+
+                // Otherwise determine byte color with 'colorByte()' function.
+                else attrset(COLOR_PAIR(colorByte(byte)));
+
+                // Place hex byte
+                mvaddstr( (2+r), (11 + c*26 + i*3), byteHex);
+
+                if (activeX == r && activeY == i + c*8) attrset(COLOR_PAIR(4));
+                else attrset(COLOR_PAIR(5));
+
+                // Place char
+                mvaddstr( (2+r), (11 + collumns*26 + c*11 + i), byteChar);
+                attrset(COLOR_PAIR(5));
+            }   
+        }
+    }
 }
 
 int main(int argc, char* argv[])
 {
-    // Main variables.
+    // Read filename / check args for mistakes.
     // ------------------------------------------------------
-    int columns = 2;
-    char* fileUrl;
-    bool lineNums = true;
-    std::ifstream file;
-    std::string fileheader;
-    int buffer[32];
-    int columnCount = 0;
+    if (argc > 2 || argc == 1) {printf("ERROR: Please use this syntax: hexyou [filename].\n");exit(1);}
+    char* fileName = argv[1];
 
-    // Parse command line arguments.
+    // Try to open file stream.
     // ------------------------------------------------------
-    parseArgs(argc, argv, columns, fileUrl, lineNums);
-    
-    // Open file.
-    // ------------------------------------------------------
-    file.open(fileUrl);
-    if (!file) {printf("ERROR: The specified file does not exist.\n"); return 1;}
+    std::fstream file(fileName);
+    if (!file) {printf("ERROR: Failed to open file.\n");exit(1);}
 
-    // Generate top-text.
+    // Detect file header.
     // ------------------------------------------------------
-    std::cout << "Showing file: " << fileUrl;
-    loadBuffer(file, buffer, 4);
-    file.seekg(0);
-    fileheader = getFileHeader(buffer);
-    if (fileheader != "") std::cout << " | Found file header: " << fileheader;
-    std::cout << std::endl;
-    
+    getFileHeader(file, fileHeader, fileHeaderLen);
 
-    // Generate top-lines.
+    // Start ncurses and determine terminal size.
     // ------------------------------------------------------
-    std::cout << "╔";                                           // Cornerpiece
-    if (lineNums) std::cout << "══" << "══════" << "╦";         // Line numbers
-    for (int i = 0; i < columns; i++) {
-        std::cout << "══" << "═══════════════════════" << "╦";} // Hex columns
-    for (int i = 0; i < columns; i++) {
-        std::cout << "══" << "════════";                        // Char columns
-        if (i != (columns -1)) std::cout << "╦";}
-    std::cout << "╗" << std::endl;                              // Cornerpiece and line break
+    setlocale(LC_ALL, "");
+    initscr();
+    use_default_colors();
+    start_color();
 
-    // Generate columns
+    // Set up colours.
     // ------------------------------------------------------
-    while (file.good())
+    noecho();
+    keypad(stdscr, true);
+    init_pair(0, -1, -1);
+    init_pair(1, COLOR_RED, -1);
+    init_pair(2, COLOR_BLUE, -1);
+    init_pair(3, COLOR_GREEN, -1);
+    init_pair(4, COLOR_BLACK, COLOR_WHITE);
+    init_pair(5, -1, -1);
+    init_pair(6, COLOR_CYAN, COLOR_BLACK);
+
+    // Inital screen rezise and first line draws.
+    // ------------------------------------------------------
+    absoluteIndex = 0;
+    winResize(winX, winY, scrX, scrY, collumns, activeX, activeY, activeRow, absoluteIndex);
+    drawScreen(winX, winY, collumns, fileName, fileHeader);
+
+    // Main loops
+    // ------------------------------------------------------
+    while (running)
     {
-        // Load next bytes into buffer.
-        loadBuffer(file, buffer, columns);
-
-        // Starting line.
-        std::cout << "║ ";
-
-        // Print row numbers.
-        if (lineNums) printLineNum(columnCount, columns);
-
-        // Print hex columns.
-        for (int i = 0; i < columns; i++) printRowHex(buffer, i);
+        // Start by drawing screen.
+        drawLineNr(scrX, scrY, collumns, activeRow);
+        drawBytes(collumns, winY, file, fileHeaderLen, activeRow, activeX, activeY);
+        refresh();
         
-        // Print char columns.
-        for (int i = 0; i < columns; i++) printRowChar(buffer, i);
-        
-        // Line break
-        std::cout << std::endl;
+        // Handle user input
+        key = getch();
+        switch (key)
+        {
+            // Handle terminal resize events.
+            case KEY_RESIZE: 
+                absoluteIndex = (activeRow + activeY) * collumns * 8 + (activeX + 1);
+                winResize(winX, winY, scrX, scrY, collumns, activeX, activeY, activeRow, absoluteIndex); 
+                clear();
+                drawScreen(winX, winY, collumns, fileName, fileHeader);
+                break;
+            
+            // Shutdown program when [esc] is pressed.
+            //case 27: // == KEY_ESC 
+                //running = false;
+                //break;
+
+            case KEY_DOWN:
+                absoluteIndex = absoluteIndex - (8 * collumns);
+                if (activeX <= winY-4) activeX++;
+                else activeRow++;
+                break;
+
+            case KEY_UP: 
+                absoluteIndex = absoluteIndex + (8 * collumns);
+                if (activeX > 0) activeX--;
+                else if (activeRow > 0) { activeRow--;}
+                break;
+
+            case KEY_LEFT: 
+                if (activeY > 0) activeY--;
+                else if (activeX > 0) {activeX--; activeY = collumns * 8 - 1;}
+                break;
+
+            case KEY_RIGHT:
+                if (activeY < collumns * 8 - 1) activeY++;
+                else if (activeX < 9999) {
+                    if (activeX <= winY-4) activeX++;
+                    else activeRow++;
+                    activeY = 0;}
+                break;
+
+            default: break;
+        }
     }
-
-    // Generate bottom.
-    // ------------------------------------------------------
-    std::cout << "╚";                                           // Cornerpiece
-    if (lineNums) std::cout << "══" << "══════" << "╩";         // Line numbers
-    for (int i = 0; i < columns; i++) {
-        std::cout << "══" << "═══════════════════════" << "╩";} // Hex columns
-    for (int i = 0; i < columns; i++) {
-        std::cout << "══" << "════════";                        // Char columns
-        if (i != (columns -1)) std::cout << "╩";}
-    std::cout << "╝" << std::endl;                              // Cornerpiece and final line break
 
     // Cleanup time
     // ------------------------------------------------------
+    endwin();
     file.close();
 }
+
+// */
