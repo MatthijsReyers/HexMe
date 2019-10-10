@@ -1,5 +1,5 @@
 # HexMe
-HexMe is an open source hex viewer licensed under the MIT License, it supports a curses based terminal interface that can be used to look at files on the individual bytes level. Currently HexMe is only available for 64-bit linux, but future releases for modern version of Windows are also planned.
+HexMe is an open source hex viewer licensed under the MIT License. it supports a curses based terminal interface that can be used to look at files on the individual bytes level. Currently HexMe is only available for 64-bit linux, but future releases for modern version of Windows are also planned.
 
 ![Animated gif preview of HexMe running in terminal.](https://raw.githubusercontent.com/MatthijsReyers/HexMe/master/animation.gif)
 
