@@ -5,7 +5,7 @@ HexMe is an open source hex viewer licensed under the MIT License, it supports a
 
 ## Features
 - HexMe will give different colors to different types of bytes. Allowing the user to easily identify null bytes, bytes that translate to valid ascii characters, etc.
-- HexMe can recognize a variaty of file types by identifing the file header bytes, which it will give a unique color.
+- HexMe can recognize a variety of file types by identifing the file header bytes, which it will give a unique color.
 
 ## Contributing
 If you'd like to help please check out the CONTRIBUTE.md file.
