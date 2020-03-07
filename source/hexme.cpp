@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
 {
     // Read filename / check args for mistakes.
     // ------------------------------------------------------
-    if (argc > 2 || argc == 1) {printf("ERROR: Please use this syntax: hexyou [filename].\n");exit(1);}
+    if (argc > 2 || argc == 1) {printf("ERROR: Please use this syntax: hexme [filename].\n");exit(1);}
     char* fileName = argv[1];
 
     // Try to open file stream.
