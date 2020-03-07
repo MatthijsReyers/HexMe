@@ -24,7 +24,7 @@ void showHelp()
     std::cout << "Program options:" << std::endl;
     std::cout << "-n                Do not show line numbers." << std::endl;
     std::cout << "-c [int]          How many collums to use for listing" << std::endl;
-    std::cout << "                  bytes, (default = 2, max = 4)." << std::endl;
+    std::cout << "                  bytes, (default = 2, max = 6)." << std::endl;
 
 
     exit(0);

@@ -1,9 +1,18 @@
 
-COMPILER = g++
-FLAGS = -lncurses
-OUTPUTEXEC = hexme
-SOURCEFOLDER = ./source/
-MAIN = hexme.cpp
+COMPILER = gcc
+FLAGS = -xc++ -Wall -lstdc++ -shared-libgcc -lncurses
 
-main:
-	$(COMPILER) $(FLAGS) -o $(OUTPUTEXEC) -I $(SOURCEFOLDER) $(SOURCEFOLDER)$(MAIN)
+SOURCEFOLDER = ./source/
+OBJECTFOLDER = ./obj/
+OUTPUTFOLDER = ./bin/
+
+OUTPUTEXEC = hexme
+MAINFILE = main.cpp
+
+OBJECTS = $(OBJECTFOLDER)argparse.o
+
+main: argparse
+	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) -I $(SOURCEFOLDER) $(SOURCEFOLDER)$(MAINFILE)
+
+argparse:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)argparse/argparse.cpp -o $(OBJECTFOLDER)argparse.o 
