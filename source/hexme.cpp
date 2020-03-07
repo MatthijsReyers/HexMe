@@ -1,14 +1,3 @@
-
-// 10-09-2019 Matthijs Reyers
-// 
-// Compile command:
-// g++ -I ./ -o hexme main.cpp -lncurses
-
-// #include <string>
-// #include <thread>
-// #include <stdio.h>
-
-// Main headers
 #include <curses.h>
 #include <iostream>
 #include <fstream>
