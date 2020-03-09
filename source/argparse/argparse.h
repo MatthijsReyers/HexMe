@@ -2,10 +2,10 @@
 
 #include <string>
 
-class options
+class arguments
 {
     public:
-        options(){};
+        arguments(){};
 
         bool showError = false;
         bool showHelp = false;
@@ -18,4 +18,4 @@ class options
         std::string error;
 };
 
-options parseArgs(int argc, const char *argv[]);
+arguments parseArgs(int argc, const char *argv[]);

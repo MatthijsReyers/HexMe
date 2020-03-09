@@ -1,8 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <map>
+#include <string>
 
 std::string getFileHeaderType(std::fstream &file);

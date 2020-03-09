@@ -1,20 +1,23 @@
+#include "hdetect.h"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <map>
 
-bool checkForHeader(int* buffer, std::vector<int> header, int headerLength)
+bool compareHeaders(std::vector<int> header, int* buffer)
 {
-    bool foundHeader = true;
-    for (int i = 0; i < headerLength; i++) {if (buffer[i] != header[i] && header[i] != -1) foundHeader = false;};
-    return foundHeader;
+    for (long unsigned int i = 0; i < header.size(); i++)
+        if (header[i] != buffer[i] && header[i] != -1)
+            return false;
+    return true;
 }
 
-void getFileHeader(std::fstream &file, std::string &fileHeader, int &fileHeaderLen)
+std::string getFileHeaderType(std::fstream &file)
 {
     std::map<std::string, std::vector<int>> headers;
     
-    // File headers and assosicated bytes.
+    // File headers and assosicated bytes. (-1 is used a wildcard).
     headers["PDF (pdf document)"] = {37, 80, 68, 70, 45};
     headers["PSD (Adobe Photoshop Document file)"] = {0x38, 0x42, 0x50, 0x53};
     headers["PNG (Portable Network Graphics)"] = {137, 80, 78, 71, 13, 10, 26, 10};
@@ -37,22 +40,16 @@ void getFileHeader(std::fstream &file, std::string &fileHeader, int &fileHeaderL
     headers["XML (eXtensible Markup Language)"] = {0x3c, 0x3f, 0x78, 0x6d, 0x6c, 0x20};
     headers["macOS file Alias (Symbolic link)"] = {0x62, 0x6F, 0x6F, 0x6B, 0x00, 0x00, 0x00, 0x00, 0x6D, 0x61, 0x72, 0x6B, 0x00, 0x00, 0x00, 0x00};
 
-    // Fill buffer with first 32 bytes.
+    // Load first 32 bytes of file into buffer.
     int buffer[32];
-    for (int i = 0; i < 32; i++) {buffer[i] = file.get();}
+    for (int i = 0; i < 32; i++) 
+        buffer[i] = file.get();
 
-    // Linear search all headers.
+    // Compare headers with simple linear search.
     for (auto const &item : headers)
-    {
-        if (checkForHeader(buffer, item.second, item.second.size()))
-        {
-            fileHeaderLen = item.second.size();
-            fileHeader = item.first;
-            return;
-        }
-    }
-    
-    // Return nothing if nothing found.
-    fileHeader = "";
-    fileHeaderLen = 0;
+        if (compareHeaders(item.second,buffer))
+            return item.first;
+
+    return std::string("");
 }
+

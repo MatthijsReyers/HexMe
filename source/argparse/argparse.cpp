@@ -1,11 +1,12 @@
 #include "argparse.h"
 
 #include <string>
+#include <sstream>
 #include <stdexcept>
 
-options parseArgs(const int argc, const char **argv)
+arguments parseArgs(const int argc, const char **argv)
 {
-    auto parsed = options();
+    auto parsed = arguments();
 
     // Check if any arguments have been provided at all.
     if (argc == 1) {
@@ -42,6 +43,9 @@ options parseArgs(const int argc, const char **argv)
                     int count = std::stoi(argv[i+1]);
                     parsed.forceCollumCount = count;
 
+                    // Skip next item in array.
+                    i++;
+
                     if (count < 1 || count > 8) {
                         parsed.showError = true;
                         parsed.error = "Please provide a number between 1-8 after '-c'.";
@@ -50,14 +54,26 @@ options parseArgs(const int argc, const char **argv)
                 catch (const std::invalid_argument& ia)
                 {
                     parsed.showError = true;
-                    parsed.error = "\"";
+                    std::stringstream ss;
+                    ss << "\"" << argv[i+1] << "\" is not a number, please provide a number between 1-8 after '-c'.";
+                    parsed.error = ss.str();
                 }
+            }
+        }
+
+        else {
+            // Last argument must be file url.
+            if (i == argc -1) 
+                parsed.file = argv[argc - 1];
+
+            else {
+                parsed.showError = true;
+                parsed.error = "Please provide a file to display.";
             }
         }
     }
 
-    // Last argument must be file url.
-    parsed.file = argv[argc - 1];
+
 
     return parsed;
 }
