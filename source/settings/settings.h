@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../exceptions/exceptions.h"
+
 #include <fstream>
 #include <sstream>
 #include <iostream>

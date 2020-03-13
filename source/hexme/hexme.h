@@ -1,3 +1,5 @@
+#pragma once
+
 #include "./../settings/settings.h"
 #include "./../argparse/argparse.h"
 
@@ -15,9 +17,10 @@ class hexme
         settings sets;
 
     public:
+        hexme() {};
         hexme(std::fstream &file, arguments args);
-        ~hexme();
 
+        void close();
         void run();
         void onResize();
 };

@@ -1,10 +1,5 @@
 #include "hdetect.h"
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <map>
-
 bool compareHeaders(std::vector<int> header, int* buffer)
 {
     for (long unsigned int i = 0; i < header.size(); i++)

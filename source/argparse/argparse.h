@@ -1,13 +1,16 @@
 #pragma once
 
+#include "../exceptions/exceptions.h"
+
 #include <string>
+#include <sstream>
+#include <stdexcept>
 
 class arguments
 {
     public:
         arguments(){};
 
-        bool showError = false;
         bool showHelp = false;
         bool showVersion = false;
         bool showLineNums = true;
@@ -15,7 +18,6 @@ class arguments
         int forceCollumCount = 0;
 
         std::string file;
-        std::string error;
 };
 
 arguments parseArgs(int argc, const char *argv[]);

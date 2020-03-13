@@ -14,20 +14,13 @@ settings loadSettings()
 
     std::fstream file(url.c_str(), std::fstream::out);
     if (!file) {
-        mkdir();
+        mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         file.open(url.c_str(), std::fstream::out);
+        if (!file)
+            throw CouldNotLoadSettingsException("Could not load settings file and failed to create new file settings file.");
     }
 
-    ss.clear();
-    std::stringstream  newSS;
-    newSS << "mkdir " << HOMEDIR << "/.local/share/hexme/";
-    system(newSS.str().c_str());
-
-    // printf(ss.str().c_str());
-
-
-    if (!file) printf("\nIts not okay!\n");
-    else printf("\nIts okay!\n");
+    file.close();
 }
 
 bool saveSettings(settings tosave)

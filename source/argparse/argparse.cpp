@@ -1,18 +1,12 @@
 #include "argparse.h"
 
-#include <string>
-#include <sstream>
-#include <stdexcept>
-
 arguments parseArgs(const int argc, const char **argv)
 {
     auto parsed = arguments();
 
     // Check if any arguments have been provided at all.
-    if (argc == 1) {
-        parsed.showError = true;
-        parsed.error = "Please provide a file to display.";
-    }
+    if (argc == 1)
+        throw InvalidArgsException("Please provide a file to display.");
 
     for (int i = 1; i < argc; i++)
     {
@@ -33,10 +27,9 @@ arguments parseArgs(const int argc, const char **argv)
         else if (arg == "-c")
         {
             // Check if anything comes after '-c'.
-            if (i+1 == argc) {
-                parsed.showError = true;
-                parsed.error = "Please provide a number after '-c'.";
-            }
+            if (i+1 == argc)
+                throw InvalidArgsException("Please provide a number after '-c'.");
+
             else {
                 try {
                     // Convert input to an int.
@@ -46,17 +39,14 @@ arguments parseArgs(const int argc, const char **argv)
                     // Skip next item in array.
                     i++;
 
-                    if (count < 1 || count > 8) {
-                        parsed.showError = true;
-                        parsed.error = "Please provide a number between 1-8 after '-c'.";
-                    }
+                    if (count < 1 || count > 8)
+                        throw InvalidArgsException("Please provide a number between 1-8 after '-c'.");
                 }
                 catch (const std::invalid_argument& ia)
                 {
-                    parsed.showError = true;
                     std::stringstream ss;
                     ss << "\"" << argv[i+1] << "\" is not a number, please provide a number between 1-8 after '-c'.";
-                    parsed.error = ss.str();
+                    throw InvalidArgsException(ss.str());
                 }
             }
         }
@@ -66,14 +56,9 @@ arguments parseArgs(const int argc, const char **argv)
             if (i == argc -1) 
                 parsed.file = argv[argc - 1];
 
-            else {
-                parsed.showError = true;
-                parsed.error = "Please provide a file to display.";
-            }
+            else throw InvalidArgsException("Please provide a file to display.");
         }
     }
-
-
 
     return parsed;
 }

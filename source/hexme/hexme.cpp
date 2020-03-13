@@ -1,4 +1,5 @@
 #include "hexme.h"
+#include "../settings/settings.h"
 
 hexme::hexme(std::fstream &file, arguments args)
 {
@@ -12,15 +13,16 @@ hexme::hexme(std::fstream &file, arguments args)
     this->height = getmaxx(stdscr);
 }
 
-hexme::~hexme()
-{
-    // Set terminal back to normal mode.
-    endwin();
-}
-
 void hexme::run()
 {
+    settings programSettings = loadSettings();
+}
 
+void hexme::close()
+{
+    // Set terminal back to normal mode.
+    echo();
+    endwin();
 }
 
 void hexme::onResize()
