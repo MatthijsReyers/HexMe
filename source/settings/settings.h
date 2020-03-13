@@ -1,11 +1,14 @@
-#include <fstream>
+#pragma once
 
-const char* SETTINGSFILE = ".local/share/hexme/settings.ini";
-const char* HOMEDIR = getenv("HOME");
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <sys/stat.h>
 
 struct settings
 {
 
 };
 
-settings loadSettings(const char* HOME);
+settings loadSettings();
+bool saveSettings(settings tosave);
