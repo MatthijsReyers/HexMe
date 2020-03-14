@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../exceptions/exceptions.h"
+#include "./../exceptions/exceptions.h"
 
 #include <fstream>
 #include <sstream>

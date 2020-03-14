@@ -1,6 +1,6 @@
-#include "exceptions/exceptions.h"
-#include "argparse/argparse.h"
-#include "hexme/hexme.h"
+#include "./exceptions/exceptions.h"
+#include "./utils/argparse/argparse.h"
+#include "./app.h"
 
 #include <fstream>
 #include <iostream>
@@ -9,32 +9,27 @@
 int main(const int argc, char const **argv)
 {
     arguments programArguments;
-    std::fstream file;
-    hexme app;
+    std::filebuf file;
 
     try {
         programArguments = parseArgs(argc, argv);
 
-        file.open(programArguments.file);
+        file.open(programArguments.file, std::ios::binary | std::ios::out | std::ios::app);
         if (!file.is_open()) 
             throw FailedToOpenFileException(programArguments.file, "does the file exist?");
 
-        app = hexme(file, programArguments);
-        app.run();
-        app.close();
+        hexme::app application(file, programArguments);
+        application.run();
+        application.close();
+        
+        file.close();
     }
 
-    catch (InvalidArgsException error) {
+    catch (const InvalidArgsException &error) {
         error.printError();
     }
     
-    catch (FailedToOpenFileException error) {
-        file.close();
-        error.printError();
-    }
-
-    catch (HexMeException error) {
-        app.close();
+    catch (const HexMeException &error) {
         file.close();
         error.printError();
     }

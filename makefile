@@ -9,22 +9,27 @@ OUTPUTFOLDER = ./bin/
 OUTPUTEXEC = hexme
 MAINFILE = main.cpp
 
-OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)settings.o $(OBJECTFOLDER)hexme.o $(OBJECTFOLDER)exceptions.o 
+OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)app.o $(OBJECTFOLDER)settings.o 
 
-main: exceptions argparse hdetect settings hexme
+main: exceptions argparse hdetect settings app
 	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) -I $(SOURCEFOLDER) $(SOURCEFOLDER)$(MAINFILE)
 
 exceptions:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)exceptions/exceptions.cpp -o $(OBJECTFOLDER)exceptions.o 
 
 argparse:
-	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)argparse/argparse.cpp -o $(OBJECTFOLDER)argparse.o 
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/argparse/argparse.cpp -o $(OBJECTFOLDER)argparse.o 
 
 hdetect:
-	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)hdetect/hdetect.cpp -o $(OBJECTFOLDER)hdetect.o 
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/hdetect/hdetect.cpp -o $(OBJECTFOLDER)hdetect.o 
 
 settings:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)settings/settings.cpp -o $(OBJECTFOLDER)settings.o 
 
-hexme:
-	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)hexme/hexme.cpp -o $(OBJECTFOLDER)hexme.o 
+app:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)app.cpp -o $(OBJECTFOLDER)app.o
+
+
+
+run:
+	./bin/hexme README.md
