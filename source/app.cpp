@@ -38,6 +38,8 @@ namespace hexme
         // Get terminal resolution.
         this->width = getmaxy(stdscr); 
         this->height = getmaxx(stdscr);
+
+        
     }
 
 }
