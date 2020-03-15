@@ -8,19 +8,17 @@
 
 int main(const int argc, char const **argv)
 {
-    arguments programArguments;
-    std::filebuf file;
+    utils::arguments programArguments;
+    utils::file file;
 
     try {
-        programArguments = parseArgs(argc, argv);
+        programArguments = utils::parseArgs(argc, argv);
 
-        file.open(programArguments.file, std::ios::binary | std::ios::out | std::ios::app);
-        if (!file.is_open()) 
-            throw FailedToOpenFileException(programArguments.file, "does the file exist?");
+        file.open(programArguments.file);
 
-        hexme::app application(file, programArguments);
-        application.run();
-        application.close();
+        app hexme(file, programArguments);
+        hexme.run();
+        hexme.close();
         
         file.close();
     }

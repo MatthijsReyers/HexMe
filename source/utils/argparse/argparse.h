@@ -6,18 +6,21 @@
 #include <sstream>
 #include <stdexcept>
 
-class arguments
+namespace utils
 {
-    public:
-        arguments(){};
+    class arguments
+    {
+        public:
+            arguments(){};
 
-        bool showHelp = false;
-        bool showVersion = false;
-        bool showLineNums = true;
+            bool showHelp = false;
+            bool showVersion = false;
+            bool showLineNums = true;
 
-        int forceCollumCount = 0;
+            int forceCollumCount = 0;
 
-        std::string file;
-};
+            std::string file;
+    };
 
-arguments parseArgs(int argc, const char *argv[]);
+    arguments parseArgs(int argc, const char *argv[]);
+}

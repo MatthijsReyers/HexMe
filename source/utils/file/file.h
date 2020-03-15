@@ -9,24 +9,40 @@ namespace utils
 {
     class file
     {
-        private:
-            std::fstream fileStream;
-            unsigned long long cursor = 0;
+    private:
+        std::fstream* fileStream;
+        std::filebuf* fileBuffer;
 
-        public:
-            file() {};
+    public:
+        file();
+        file(const char* url); 
+        file(const std::string& url);
 
-            file& open(const char* url);
-            file& open(std::string url);
+        file& open(const char* url);
+        file& open(const std::string& url);
 
-            unsigned long long getCursorLocation() {return cursor;}
-            unsigned long long getNextLocation(byte* bytes, int length);
+        file& close();
 
-            file& moveCursor(unsigned long long location);
-            file& resetCursor();
+        unsigned long long getFileStart();
+        unsigned long long getFileEnd();
+        unsigned long long getCursorLocation();
 
-            file& insertBytes(const byte* bytes, const int length);
-            file& deleteBytes(const int length);
-            file& replaceBytes(const byte* bytes, const int length);
+        file& resetCursor();
+        file& moveCursor(unsigned long long location);
+        file& incCursor();
+        file& incCursor(int n);
+        file& decCursor();
+        file& decCursor(int n);
+
+        byte getCurrentByte();
+        byte getNextByte();
+        byte* getCurrentBytesN(const int n);
+        byte* getNextBytesN(const int n);
+
+        file& insertByte(const byte in);
+        file& insertBytes(const byte* in, const int n);
+        
+        file& replaceByte(const byte in);
+        file& replaceBytes(const byte* in, const int n);
     };
 }
