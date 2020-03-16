@@ -2,8 +2,8 @@
 
 settings loadSettings()
 {
-    const char* SETTINGSFILE = "settings.ini";
-    const char* SETTINGSDIR = "/.local/share/hexme/";
+    const static char* SETTINGSFILE = "settings.ini";
+    const static char* SETTINGSDIR = "/.local/share/hexme/";
     const char* HOMEDIR = getenv("HOME");
 
     std::stringstream ss;
@@ -23,7 +23,7 @@ settings loadSettings()
     file.close();
 }
 
-bool saveSettings(settings tosave)
+bool saveSettings(const settings tosave)
 {
     return true;
 }

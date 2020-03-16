@@ -1,6 +1,10 @@
 #pragma once
 
 #include "./settings/settings.h"
+
+#include "./gui/commandline/commandline.h"
+#include "./gui/main/main.h"
+
 #include "./utils/argparse/argparse.h"
 #include "./utils/file/file.h"
 
@@ -20,6 +24,9 @@ class app
         bool running;
         bool focusCmdPromt = false;
 
+        gui::commandline cmdWindow;
+        // gui::main mainWindow;
+
         utils::file& file;
         utils::arguments& args;
         settings sets;
@@ -27,7 +34,9 @@ class app
     public:
         app(utils::file& File, utils::arguments& Args);
 
-        void close();
-        void run();
-        void onResize();
+        app& close();
+        app& run();
+        app& onResize();
+        app& onMoveCursor(int n);
+        app& executeCmd(std::string cmd);
 };
