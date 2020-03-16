@@ -91,3 +91,8 @@ app& app::onMoveCursor(int n)
     // Return reference to self.
     return (*this);
 }
+
+app& app::executeCmd(const std::string& cmd)
+{
+    return (*this);
+}

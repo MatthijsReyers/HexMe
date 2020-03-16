@@ -5,7 +5,7 @@
 
 namespace gui
 {
-    class main
+    class hexviewer
     {
         private:
             int width, height;
@@ -16,12 +16,12 @@ namespace gui
             void drawBorders();
 
         public:
-            main(utils::file File);
-            main& onResize();
-            main& refresh();
+            hexviewer(utils::file File);
+            hexviewer& onResize();
+            hexviewer& refresh();
     };
 
-    main::main(utils::file File) : file(File)
+    hexviewer::hexviewer(utils::file File) : file(File)
     {
         // Create window
         this->window = newwin(width, height, 1, 0);
@@ -30,18 +30,18 @@ namespace gui
         this->onResize();
     }
 
-    void main::drawRow(long r)
+    void hexviewer::drawRow(long r)
     {
 
     }
 
-    void main::drawBorders()
+    void hexviewer::drawBorders()
     {
         // Draw the surrounding box.
         box(this->window, '2', '2');
     }
 
-    main& main::onResize()
+    hexviewer& hexviewer::onResize()
     {
         // Clear window contents.
         wclear(this->window);
@@ -55,7 +55,7 @@ namespace gui
         return (*this);
     }
 
-    main& main::refresh()
+    hexviewer& hexviewer::refresh()
     {
 
     }

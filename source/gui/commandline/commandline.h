@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <ncurses.h>
 
@@ -7,7 +9,7 @@ namespace gui
     {
         private:
             WINDOW* window;
-            std::string command;
+            std::string command = "test";
             bool focus = false;
 
         public:

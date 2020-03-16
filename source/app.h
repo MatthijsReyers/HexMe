@@ -3,7 +3,7 @@
 #include "./settings/settings.h"
 
 #include "./gui/commandline/commandline.h"
-#include "./gui/main/main.h"
+// #include "./gui/main/main.h"
 
 #include "./utils/argparse/argparse.h"
 #include "./utils/file/file.h"
@@ -38,5 +38,5 @@ class app
         app& run();
         app& onResize();
         app& onMoveCursor(int n);
-        app& executeCmd(std::string cmd);
+        app& executeCmd(const std::string& cmd);
 };

@@ -6,9 +6,10 @@ namespace gui
     {
         // Calculate new size.
         int width = getmaxy(stdscr); 
-        int y = getmaxx(stdscr) - 1;
+        int y = getmaxx(stdscr) - 5;
 
         this->window = newwin(width, 1, y, 0);
+        this->refresh();
     }
 
     commandline& commandline::onInput(int i)
@@ -27,8 +28,19 @@ namespace gui
 
     commandline& commandline::refresh()
     {
-        mvwprintw(this->window, 0, 0, this->command.c_str());
-        wrefresh(this->window);
+        wclear(window);
+        mvwprintw(window, 0, 0, command.c_str());
+        wrefresh(window);
         return (*this);
+    }
+
+    bool commandline::hasFocus()
+    {
+        return this->focus;
+    }
+
+    std::string commandline::getCmd()
+    {
+        return this->command;
     }
 }
