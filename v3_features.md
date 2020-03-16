@@ -16,16 +16,25 @@
 
 EXAMPLE COMMANDS
 
-=
+====== SAVE ======
+save 
+save copy
+
+====== EXIT ======
+exit
+exit nosave
+
 ====== INSERT =======
 insert x0 x93 x32 xFF
 insert "These ascii chars"
 
 ======= FIND =======
 find "this string"
+find x
 
 ======= MOVE =======
 move absolute 9999
+move relative 123
 move line 27
 move top
 move bottom

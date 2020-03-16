@@ -6,6 +6,7 @@
 app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 {
     // Setup nCurses.
+    setlocale(LC_ALL, "");
     initscr();
     keypad(stdscr, true);
     noecho();
@@ -23,9 +24,6 @@ app& app::run()
 
         if (input == KEY_RESIZE)
             this->onResize();
-
-        else if (input == KEY_RESIZE)
-            this->focusCmdPromt = false;
 
         else if (cmdWindow.hasFocus())
         {

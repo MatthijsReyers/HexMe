@@ -2,7 +2,7 @@
 
 #include "./settings/settings.h"
 
-#include "./gui/commandline/commandline.h"
+#include "./gui/textbox/textbox.h"
 // #include "./gui/main/main.h"
 
 #include "./utils/argparse/argparse.h"
@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <ncurses.h>
+#include <locale.h>
 
 class app
 {
@@ -22,9 +23,8 @@ class app
         int rows, columns;
 
         bool running;
-        bool focusCmdPromt = false;
 
-        gui::commandline cmdWindow;
+        gui::textbox cmdPromt;
         // gui::main mainWindow;
 
         utils::file& file;
