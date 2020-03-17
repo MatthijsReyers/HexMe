@@ -14,6 +14,7 @@ namespace utils
     private:
         std::fstream* fileStream;
         std::filebuf* fileBuffer;
+        std::string url = "";
 
     public:
         file();

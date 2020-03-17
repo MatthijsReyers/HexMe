@@ -77,6 +77,9 @@ app& app::onResize()
     hexView->onResize();
     cmdPromt->onResize();
 
+    // Needed for some reason?
+    refresh();
+
     // Refresh all windows.
     hexView->onRefresh();
     cmdPromt->onRefresh();

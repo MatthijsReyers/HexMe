@@ -9,13 +9,13 @@ namespace utils
 
     file::file(const char* url)
     {
-        fileStream = new std::fstream();
+        this->fileStream = new std::fstream();
         this->open(std::string(url));
     }
 
     file::file(const std::string& url)
     {
-        fileStream = new std::fstream();
+        this->fileStream = new std::fstream();
         this->open(url);
     }
 
@@ -26,8 +26,9 @@ namespace utils
 
     file& file::open(const std::string& url)
     {
-        fileStream->open(url, std::ios::out | std::ios::binary | std::ios::in);
-        fileBuffer = fileStream->rdbuf();
+        this->url = url;
+        this->fileStream->open(url, std::ios::out | std::ios::binary | std::ios::in);
+        this->fileBuffer = fileStream->rdbuf();
         return (*this);
     }
 
@@ -59,6 +60,25 @@ namespace utils
     byte file::getCurrentByte()
     {
         return fileBuffer->sgetc();
+    }
+
+    byte file::getNextByte()
+    {
+        // return fileBuffer->sgetc();
+    }
+
+    byte* file::getCurrentBytesN(const int n)
+    {
+        return new byte[8]{0x03, 0x02, 0x0F, 0x06, 0x0A, 0x04, 0x02, 0x10};
+
+        byte* result = new byte[n];
+        fileBuffer->sgetn(result,n);
+        return result;
+    }
+
+    byte* file::getNextBytesN(const int n)
+    {
+
     }
 
     file& file::replaceByte(const byte in)
