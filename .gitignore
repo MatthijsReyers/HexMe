@@ -1,4 +1,8 @@
-testfile.hex
-test.*
+
+# Folders
+# ======================
 .vscode
+obj
+obj/
 ./obj/
+./obj/*
