@@ -26,6 +26,8 @@ namespace utils
 
         file& close();
 
+        std::string getFileName();
+
         unsigned long long getFileStart();
         unsigned long long getFileEnd();
         unsigned long long getCursorLocation();

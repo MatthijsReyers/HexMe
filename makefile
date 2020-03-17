@@ -9,25 +9,29 @@ OUTPUTFOLDER = ./bin/
 OUTPUTEXEC = hexme
 MAINFILE = main.cpp
 
-OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
+OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o
 
-main: setup exceptions argparse file hdetect textbox viewer app
+main: exceptions argparse file hdetect textbox viewer
 	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
 
 setup:
+	clear
 	mkdir $(OBJECTFOLDER)
 
 cleanup:
+	clear
 	rm -rf $(OBJECTFOLDER)
 
+run:
+	./bin/hexme README.md
+
+# App spesific stuff.
+# =======================================================
 exceptions:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)exceptions/exceptions.cpp -o $(OBJECTFOLDER)exceptions.o 
 
 settings:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)settings/settings.cpp -o $(OBJECTFOLDER)settings.o 
-
-app:
-	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)app.cpp -o $(OBJECTFOLDER)app.o
 
 # Utils namespace
 # =======================================================
@@ -47,6 +51,3 @@ textbox:
 
 viewer:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)gui/viewer/viewer.cpp -o $(OBJECTFOLDER)viewer.o 
-
-run:
-	./bin/hexme README.md

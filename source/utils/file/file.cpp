@@ -39,6 +39,12 @@ namespace utils
         return (*this);
     }
 
+    std::string file::getFileName()
+    {
+        std::size_t found = url.find_last_of("/\\");
+        return url.substr(0,found);
+    }
+
     file& file::resetCursor()
     {
         fileBuffer->pubseekpos(0);
