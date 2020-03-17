@@ -11,8 +11,14 @@ MAINFILE = main.cpp
 
 OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
 
-main: exceptions argparse file hdetect textbox viewer app
+main: setup exceptions argparse file hdetect textbox viewer app
 	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
+
+setup:
+	mkdir $(OBJECTFOLDER)
+
+cleanup:
+	rm -rf $(OBJECTFOLDER)
 
 exceptions:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)exceptions/exceptions.cpp -o $(OBJECTFOLDER)exceptions.o 
