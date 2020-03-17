@@ -1,6 +1,6 @@
 
 COMPILER = gcc
-FLAGS = -xc++ -Wall -lstdc++ -shared-libgcc -lncurses
+FLAGS = -xc++ -Wall -lstdc++ -shared-libgcc -lncursesw
 
 SOURCEFOLDER = ./source/
 OBJECTFOLDER = ./obj/
@@ -9,10 +9,10 @@ OUTPUTFOLDER = ./bin/
 OUTPUTEXEC = hexme
 MAINFILE = main.cpp
 
-OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)commandline.o $(OBJECTFOLDER)app.o $(OBJECTFOLDER)settings.o 
+OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
 
-main: exceptions argparse file hdetect commandline app
-	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) -I $(SOURCEFOLDER) $(SOURCEFOLDER)$(MAINFILE)
+main: exceptions argparse file hdetect textbox viewer app
+	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
 
 exceptions:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)exceptions/exceptions.cpp -o $(OBJECTFOLDER)exceptions.o 
@@ -36,11 +36,11 @@ hdetect:
 
 # Gui namespace
 # =======================================================
-commandline:
-	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)gui/commandline/commandline.cpp -o $(OBJECTFOLDER)commandline.o 
+textbox:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)gui/textbox/textbox.cpp -o $(OBJECTFOLDER)textbox.o 
 
-# maingui:
-# 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)gui/main/main.cpp -o $(OBJECTFOLDER)main.o 
+viewer:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)gui/viewer/viewer.cpp -o $(OBJECTFOLDER)viewer.o 
 
 run:
 	./bin/hexme README.md

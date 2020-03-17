@@ -15,7 +15,8 @@ namespace gui
 
         WINDOW* window;
         std::string text;
-        int cursorPosition = 0;
+        unsigned long int cursorPosition = 0;
+        bool focus = false;
 
         void moveCursor(const int direction);
         void addChar(const char character);
@@ -32,5 +33,8 @@ namespace gui
         textbox& setText(const std::string text);
         textbox& setText(const char* text);
         textbox& clearText();
+
+        bool hasFocus();
+        textbox& setFocus(const bool focus);
     };
 }

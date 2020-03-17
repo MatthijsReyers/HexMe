@@ -7,6 +7,8 @@ namespace gui
         int y = getmaxy(stdscr) - 1;
         int width = getmaxx(stdscr) - 2;
         window = newwin(1, width, y, 0);
+
+        this->onRefresh();
     }
 
     textbox::~textbox()
@@ -42,12 +44,12 @@ namespace gui
                 } break;
 
             case CRTL_BACKSPACE:
-                while (text.length() > 0 && text[text.length()-1] != ' ') {
+                while (text.length() > 0 && cursorPosition > 0 && text[cursorPosition-1] != ' ') {
                     text.erase(cursorPosition-1, 1);
                     if (cursorPosition > 0)
                         cursorPosition--;
                 }
-                while (text.length() > 0 && text[text.length()-1] == ' ') {
+                while (text.length() > 0 && cursorPosition > 0 && text[cursorPosition-1] == ' ') {
                     text.erase(cursorPosition-1, 1);
                     if (cursorPosition > 0)
                         cursorPosition--;
@@ -86,7 +88,6 @@ namespace gui
         int width = getmaxx(stdscr) - 2;
         wresize(window, 1, width);
         wmove(window, y, 0);
-        this->onRefresh();
         return *this;
     }
 
@@ -109,7 +110,20 @@ namespace gui
 
     textbox& textbox::clearText()
     {
+        cursorPosition = 0;
         this->text.clear();
+        this->onRefresh();
+        return *this;
+    }
+
+    bool textbox::hasFocus()
+    {
+        return this->focus;
+    }
+
+    textbox& textbox::setFocus(const bool f)
+    {
+        this->focus = f;
         return *this;
     }
 }

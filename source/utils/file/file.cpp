@@ -56,7 +56,6 @@ namespace utils
         return (*this);
     }
 
-
     byte file::getCurrentByte()
     {
         return fileBuffer->sgetc();

@@ -1,7 +1,4 @@
 #include "app.h"
-#include "./settings/settings.h"
-
-#define byte char
 
 app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 {
@@ -10,6 +7,13 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
     initscr();
     keypad(stdscr, true);
     noecho();
+
+    // Initial refresh.
+    refresh();
+
+    // Setup all UI elements.
+    cmdPromt = new gui::textbox();
+    hexView = new gui::viewer(this->file);
 
     // Calculate intial window values.
     this->onResize();
@@ -21,15 +25,16 @@ app& app::run()
     while (this->running)
     {
         int input = getch();
-
         if (input == KEY_RESIZE)
             this->onResize();
 
-        else if (cmdWindow.hasFocus())
+        else if (cmdPromt->hasFocus())
         {
-            if (input == KEY_ENTER)
-                executeCmd(cmdWindow.getCmd());
-            else cmdWindow.onInput(input);
+            if (input == 10 /*KEY_ENTER*/) {
+                this->executeCmd(cmdPromt->getText());
+                cmdPromt->clearText();
+            }
+            else cmdPromt->onInput(input);
         }
 
         else switch (input)
@@ -46,6 +51,8 @@ app& app::run()
             case KEY_RIGHT:
                 this->onMoveCursor(1);
             default:
+                cmdPromt->setFocus(true);
+                cmdPromt->onInput(input);
                 break;
         }
     }
@@ -66,16 +73,16 @@ app& app::close()
 
 app& app::onResize()
 {
-    // Get terminal resolution.
-    this->width = getmaxy(stdscr); 
-    this->height = getmaxx(stdscr);
+    // Update all window content.
+    hexView->onResize();
+    cmdPromt->onResize();
 
-    // Calculate new row and colum count.
-    this->columns = (width - LINENUMBERSWIDTH - 1) / COLUMNWIDTH;
-    this->rows = height - 4;
+    // Refresh all windows.
+    hexView->onRefresh();
+    cmdPromt->onRefresh();
 
-    // Update all windows.
-    // TODO
+    // Recalculate column count.
+    this->columns = (getmaxy(stdscr) - LINENUMBERSWIDTH - 1) / COLUMNWIDTH;
 
     // Return reference to self.
     return (*this);
@@ -84,7 +91,8 @@ app& app::onResize()
 app& app::onMoveCursor(int n)
 {
     // Update all windows.
-    // TODO
+    hexView->onRefresh();
+    cmdPromt->onRefresh();
 
     // Return reference to self.
     return (*this);
