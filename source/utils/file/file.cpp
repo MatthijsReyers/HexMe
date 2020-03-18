@@ -53,7 +53,7 @@ namespace utils
 
     file& file::moveCursor(unsigned long long location)
     {
-        fileBuffer->pubseekpos(0);
+        fileBuffer->pubseekpos(location);
         return (*this);
     }
 

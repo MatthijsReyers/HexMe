@@ -14,13 +14,13 @@ namespace gui
     private:
         const static int LINENUMBERSWIDTH = 8 + 2 + 2;
         const static int COLUMNWIDTH = (8 * 3 + 2) + (8 + 3);
-        
+
         WINDOW* window;
         utils::file file;
 
         int width, height;
-        int columns, rows;
-        
+        int columns, rows; 
+
         int rowIndex = 0;
 
         void drawRow(unsigned long long r);
@@ -38,5 +38,7 @@ namespace gui
         viewer& onRefresh();
         viewer& onResize();
         viewer& onMoveCursor(int direction);
+
+        int getColumnCount();
     };
 }

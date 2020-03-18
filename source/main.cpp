@@ -18,12 +18,6 @@
 class app
 {
 	private:
-		const static int LINENUMBERSWIDTH = 8 + 2 + 2;
-		const static int COLUMNWIDTH = (8 * 3 + 2) + (8 + 3);
-
-		bool running;
-		int columns;
-
 		gui::textbox* cmdPromt;
 		gui::viewer* hexView;
 
@@ -54,15 +48,13 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 		use_default_colors();
 		start_color();
 		
-		init_pair(0, -1, -1);
-		init_pair(1, COLOR_RED, -1);
-		init_pair(2, COLOR_BLUE, -1);
-		init_pair(3, COLOR_GREEN, -1);
-		// init_pair(4, COLOR_BLACK, COLOR_WHITE);
-		// init_pair(5, COLOR_CYAN, COLOR_BLACK);
+		init_pair(0, -1, -1);	// DEFAULT
+		init_pair(1, 1, -1);	// RED
+		init_pair(2, 4, -1); 	// BLUE
+		init_pair(3, 2, -1);	// GREEN
+		init_pair(4, 2, -1);	// GREEN
+		init_pair(5, COLOR_BLACK, COLOR_WHITE); // CURSOR
 	}
-
-	attrset(COLOR_PAIR(5));
 
 	// Initial refresh.
 	refresh();
@@ -77,8 +69,8 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 
 app& app::run()
 {
-	this->running = true;
-	while (this->running)
+	bool running = true;
+	while (running)
 	{
 		int input = getch();
 		if (input == KEY_RESIZE)
@@ -96,10 +88,10 @@ app& app::run()
 		else switch (input)
 		{
 			case KEY_DOWN:
-				this->onMoveCursor(columns*8);
+				this->onMoveCursor(hexView->getColumnCount()*8);
 				break;
 			case KEY_UP:
-				this->onMoveCursor(columns*-8);
+				this->onMoveCursor(hexView->getColumnCount()*-8);
 				break;
 			case KEY_LEFT:
 				this->onMoveCursor(-1);
@@ -139,9 +131,6 @@ app& app::onResize()
 	// Refresh all windows.
 	hexView->onRefresh();
 	cmdPromt->onRefresh();
-
-	// Recalculate column count.
-	this->columns = (getmaxy(stdscr) - LINENUMBERSWIDTH - 1) / COLUMNWIDTH;
 
 	// Return reference to self.
 	return (*this);
