@@ -39,10 +39,10 @@ namespace utils
         file& decCursor();
         file& decCursor(int n);
 
+        unsigned long long getBytesAfterCursor();
+
         byte getCurrentByte();
-        byte getNextByte();
-        byte* getCurrentBytesN(const int n);
-        byte* getNextBytesN(const int n);
+        // byte* getCurrentBytesN(const int n);
 
         file& insertByte(const byte in);
         file& insertBytes(const byte* in, const int n);

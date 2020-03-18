@@ -1,7 +1,5 @@
 #include "viewer.h"
 
-#include <sstream>
-
 namespace gui
 {
     viewer::viewer(utils::file File) : file(File)
@@ -58,7 +56,15 @@ namespace gui
         return *this;
     }
 
-    void viewer::drawRow(int r)
+    int viewer::getByteColor(byte b)
+    {
+        if (b == 0) return 1;       // RED
+        else if (b <= 32) return 3; // GREEN
+        else if (b >= 127) return 2;// BLUE
+        else return 0;              // NO COLOR
+    }
+
+    void viewer::drawRow(unsigned long long r)
     {
         std::stringstream ss;
 
@@ -70,12 +76,34 @@ namespace gui
         zeros.append(ss.str());
         mvwprintw(window, 1+r, 2, zeros.c_str());
 
-        for (int c = 0; c < columns; c++) {
-            byte* bytes = file.getCurrentBytesN(8);
-            mvwprintw(window, 1+r, 13 + c*26, getStringFromBytes(bytes, 8).c_str());
-            mvwprintw(window, 1+r, 13 + columns*26 + c*11, getStringFromChars(bytes, 8).c_str());
-        }
+        // Set cursor to start of row.
+        file.moveCursor(r);
 
+        for (int c = 0; c < columns; c++)
+            for (int b = 0; b < 8; b++)
+            {
+                // Check if there are any bytes left in the buffer.
+                if (file.getBytesAfterCursor() == 0) {
+                    mvwprintw(window, 1+r, 13 + c*26 + b*3, "  ");
+                    mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, " ");
+                }
+                else {
+                    // Get byte & increment file cursor.
+                    byte current = file.getCurrentByte();
+                    file.incCursor();
+
+                    // Get appropriate color for byte.
+                    attrset(COLOR_PAIR(getByteColor(current)));
+
+                    // Draw hex representation of byte.
+                    mvwprintw(window, 1+r, 13 + c*26 + b*3, utils::byteToHexString(current).c_str());
+
+                    // Draw char representation of byte.
+                    if (current < 127 && current > 32) mvwaddch(window, 1+r, 13 + columns*26 + c*11 + b, current);
+                    else mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, ".");
+                }
+            }
+        
         for (int c = 1; c < columns; c++) {
             mvwprintw(window, 1+r, 11 + c*26, "│");
             mvwprintw(window, 1+r, 11 + columns*26 + c*11, "│");
@@ -133,29 +161,5 @@ namespace gui
     unsigned long int getRowFromIndex(const unsigned long long index)
     {
         return index;
-    }
-
-    std::string viewer::getStringFromBytes(byte* bytes, int length)
-    {
-        std::stringstream ss;
-        for (int i = 0; i < length; i++)
-            if (int(bytes[i]) > 0x0f)
-                ss << std::hex << int(bytes[i]) << " ";
-            else ss << std::hex << '0' << int(bytes[i]) << " ";
-        for (int i = 0; i < length - 8; i++)
-            ss << "   ";
-        return ss.str();
-    }
-    
-    std::string viewer::getStringFromChars(char* chars, int length)
-    {
-        std::stringstream ss;
-        for (int i = 0; i < length; i++)
-            if (chars[i] >= 32 && chars[i] <= 126)
-                ss << char(chars[i]);
-            else ss << ".";
-        for (int i = 0; i < length - 8; i++)
-            ss << " ";
-        return ss.str();
     }
 }

@@ -1,8 +1,11 @@
 #pragma once
 
 #include "./../../utils/file/file.h"
+#include "./../../utils/converters/converters.h"
 #include "ncurses.h"
 #include <iostream>
+#include <sstream>
+#include <bitset>
 
 namespace gui
 {
@@ -20,14 +23,13 @@ namespace gui
         
         int rowIndex = 0;
 
-        void drawRow(int r);
+        void drawRow(unsigned long long r);
         void drawBorders();
+
+        int getByteColor(byte b);
 
         unsigned long int getRowFromIndex(const unsigned long long index);
         unsigned long int getYFromIndex(const unsigned long long index);
-
-        std::string getStringFromBytes(byte* bytes, int length);
-        std::string getStringFromChars(char* chars, int length);
 
     public:
         viewer(utils::file File);
