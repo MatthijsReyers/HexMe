@@ -6,4 +6,7 @@
 #include <vector>
 #include <map>
 
-std::string getFileHeaderType(std::fstream &file);
+namespace utils
+{
+    std::string getFileHeaderType(std::fstream &file);
+}

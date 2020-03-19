@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./../../exceptions/exceptions.h"
+#include "./../../utils/hdetect/hdetect.h"
 
 #include <string>
 #include <fstream>
@@ -15,6 +16,7 @@ namespace utils
         std::fstream* fileStream;
         std::filebuf* fileBuffer;
         std::string url = "";
+        std::string header = "";
 
     public:
         file();
@@ -27,6 +29,7 @@ namespace utils
         file& close();
 
         std::string getFileName();
+        std::string getHeader();
 
         unsigned long long getFileStart();
         unsigned long long getFileEnd();
@@ -42,7 +45,7 @@ namespace utils
         unsigned long long getBytesAfterCursor();
 
         byte getCurrentByte();
-        // byte* getCurrentBytesN(const int n);
+        byte* getCurrentBytesN(const int n);
 
         file& insertByte(const byte in);
         file& insertBytes(const byte* in, const int n);

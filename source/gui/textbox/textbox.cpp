@@ -78,7 +78,6 @@ namespace gui
                     cursorPosition++;
                 break;
         }
-        this->onRefresh();
         return *this;
     }
 
@@ -113,17 +112,6 @@ namespace gui
         cursorPosition = 0;
         this->text.clear();
         this->onRefresh();
-        return *this;
-    }
-
-    bool textbox::hasFocus()
-    {
-        return this->focus;
-    }
-
-    textbox& textbox::setFocus(const bool f)
-    {
-        this->focus = f;
         return *this;
     }
 }

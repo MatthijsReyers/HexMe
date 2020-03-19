@@ -29,14 +29,15 @@ namespace utils
         this->url = url;
         this->fileStream->open(url, std::ios::out | std::ios::binary | std::ios::in);
         this->fileBuffer = fileStream->rdbuf();
-        return (*this);
+        this->header = utils::getFileHeaderType(*fileStream);
+        return *this;
     }
 
     file& file::close()
     {
         this->fileStream->close();
         this->fileBuffer->close();
-        return (*this);
+        return *this;
     }
 
     std::string file::getFileName()
@@ -45,22 +46,31 @@ namespace utils
         return url.substr(0,found);
     }
 
+    std::string file::getHeader()
+    {
+        this->header;
+    }
+
+    unsigned long long file::getCursorLocation()
+    {
+        return 5;
+    }
+
     file& file::resetCursor()
     {
         fileBuffer->pubseekpos(0);
-        return (*this);
+        return *this;
     }
 
     file& file::moveCursor(unsigned long long location)
     {
         fileBuffer->pubseekpos(location);
-        return (*this);
+        return *this;
     }
 
     file& file::incCursor()
     {
-        //TODO
-        return (*this);
+        return *this;
     }
 
     unsigned long long file::getBytesAfterCursor()

@@ -26,7 +26,7 @@ namespace gui
         void drawRow(unsigned long long r);
         void drawBorders();
 
-        int getByteColor(byte b);
+        int getByteColor(byte b, unsigned long long index);
 
         unsigned long int getRowFromIndex(const unsigned long long index);
         unsigned long int getYFromIndex(const unsigned long long index);
@@ -34,7 +34,7 @@ namespace gui
     public:
         viewer(utils::file File);
         ~viewer();
-
+        
         viewer& onRefresh();
         viewer& onResize();
         viewer& onMoveCursor(int direction);
