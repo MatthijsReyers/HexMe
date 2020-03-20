@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./../../utils/file/file.h"
+#include "./../../utils/hdetect/hdetect.h"
 #include "./../../utils/converters/converters.h"
 #include "ncurses.h"
 #include <iostream>
@@ -21,7 +22,8 @@ namespace gui
         int width, height;
         int columns, rows; 
 
-        int rowIndex = 0;
+        unsigned long int rowIndex = 0;
+        unsigned long int headerLength = 0;
 
         void drawRow(unsigned long long r);
         void drawBorders();

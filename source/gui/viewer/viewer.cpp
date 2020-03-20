@@ -6,6 +6,7 @@ namespace gui
 	{
 		// Create window
 		this->window = newwin(50, 50, 1, 0);
+		this->headerLength = utils::getHeaderLength(file.getHeader());
 
 		// Initial drawing of window.
 		this->onResize();
@@ -63,20 +64,23 @@ namespace gui
 
 	int viewer::getByteColor(byte b, unsigned long long index)
 	{
-		if (file.getHeader().length() >= index) return 4;	// FILE HEADER            
-		else if (b == 0) return 1;							// RED
-		else if (b <= 32) return 3;							// GREEN
-		else if (b >= 127) return 2;						// BLUE
-		else return 0;										// NO COLOR
+		int c = (int)((unsigned char)b);
+		if (index < headerLength) return 4;
+		else if (c == 0x00) return 2;		// RED
+		else if (c <= 0x0f) return 7;		// CYAN
+		else if (c <= 0x1f) return 5;		// BLUE
+		else if (c == 0xff) return 2;		// RED
+		else if (c >= 0x7f) return 6;		// PURPLE
+		else return 0;
 	}
 
 	void viewer::drawRow(unsigned long long r)
 	{
-		std::stringstream ss;
 		auto cursor = file.getCursorLocation();
 
 		// Row number.
 		int index = rowIndex + (r * columns * 8);
+		std::stringstream ss;
 		ss << std::hex << index;
 		std::string zeros = "00000000";
 		zeros.erase(zeros.length() - ss.str().length());
@@ -84,7 +88,7 @@ namespace gui
 		mvwprintw(window, 1+r, 2, zeros.c_str());
 
 		// Set cursor to start of row.
-		file.moveCursor(r * columns);
+		file.moveCursor(r * columns * 8);
 
 		for (int c = 0; c < columns; c++)
 			for (int b = 0; b < 8; b++)
@@ -99,7 +103,7 @@ namespace gui
 					file.incCursor();
 
 					// Get appropriate color for byte.
-					int color = getByteColor(current, r+b);
+					int color = getByteColor(current, (r*columns*8)+(c*8)+b);
 					wattron(window, COLOR_PAIR(color));
 
 					// Draw hex representation of byte.

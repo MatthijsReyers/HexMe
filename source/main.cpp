@@ -48,12 +48,21 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 		start_color();
 		
 		init_pair(0, -1, -1);	// DEFAULT
-		init_pair(1, 1, -1);	// RED
-		init_pair(2, 4, -1); 	// BLUE
-		init_pair(3, 2, -1);	// GREEN
-		init_pair(4, 2, -1);	// GREEN
-		init_pair(5, COLOR_BLACK, COLOR_WHITE); // CURSOR
+		init_pair(1, 0, -1);	// BLACK
+		init_pair(2, 1, -1);	// RED
+		init_pair(3, 2, -1); 	// BLUE
+		init_pair(4, 3, -1);	// GREEN
+		init_pair(5, 4, -1);	// YELLOW
+		init_pair(6, 5, -1);	// PURPLE
+		init_pair(7, 6, -1);	// CYAN
+		init_pair(8, 7, -1);	// WHITE
+		init_pair(9, COLOR_BLACK, COLOR_WHITE); // CURSOR
 	}
+
+	// Draw file name and header.
+	std::stringstream ss;
+	ss << file.getFileName() << " | " << file.getHeader() << " " << file.getHeader().length();
+	mvaddstr(0,0,ss.str().c_str());
 
 	// Initial refresh.
 	refresh();

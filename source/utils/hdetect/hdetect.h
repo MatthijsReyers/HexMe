@@ -9,4 +9,5 @@
 namespace utils
 {
     std::string getFileHeaderType(std::fstream &file);
+    unsigned long long getHeaderLength(const std::string &header);
 }

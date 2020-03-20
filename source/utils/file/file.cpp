@@ -48,7 +48,7 @@ namespace utils
 
     std::string file::getHeader()
     {
-        this->header;
+        return header;
     }
 
     unsigned long long file::getCursorLocation()
