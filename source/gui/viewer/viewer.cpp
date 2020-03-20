@@ -54,12 +54,9 @@ namespace gui
 
 	viewer& viewer::onMoveCursor(int direction)
 	{
-		/*
-			awful code warning: Wsign-compare.......
-		*/
 		unsigned long long cursor = file.getCursorLocation() + direction;
 		if (direction > 0) file.moveCursor(cursor);
-		else if (file.getCursorLocation() < (-direction)) return *this;
+		else if (file.getCursorLocation() < (unsigned long long)(-direction)) return *this;
 		else file.moveCursor(cursor);
 		return *this;
 	}
