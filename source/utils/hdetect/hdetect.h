@@ -1,13 +1,13 @@
 #pragma once
 
+#include "./../file/file.h"
+
 #include <string>
-#include <iostream>
-#include <fstream>
 #include <vector>
 #include <map>
 
 namespace utils
 {
-    std::string getFileHeaderType(std::fstream &file);
-    unsigned long long getHeaderLength(const std::string &header);
+    std::string getFileHeaderType(utils::file& f);
+    unsigned long long getHeaderLength(const std::string& header);
 }

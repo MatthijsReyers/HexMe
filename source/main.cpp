@@ -61,7 +61,7 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 
 	// Draw file name and header.
 	std::stringstream ss;
-	ss << file.getFileName() << " | " << file.getHeader() << " " << file.getHeader().length();
+	ss << file.getFileName() << " | " << file.getHeader();
 	mvaddstr(0,0,ss.str().c_str());
 
 	// Initial refresh.

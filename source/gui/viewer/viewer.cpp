@@ -30,7 +30,7 @@ namespace gui
 
 	viewer& viewer::onResize()
 	{
-		// Clear window.
+		// // Clear window.
 		wclear(window);
 
 		// Calculate new row & column count.
@@ -54,6 +54,13 @@ namespace gui
 
 	viewer& viewer::onMoveCursor(int direction)
 	{
+		/*
+			awful code warning: Wsign-compare.......
+		*/
+		unsigned long long cursor = file.getCursorLocation() + direction;
+		if (direction > 0) file.moveCursor(cursor);
+		else if (file.getCursorLocation() < (-direction)) return *this;
+		else file.moveCursor(cursor);
 		return *this;
 	}
 
@@ -62,10 +69,11 @@ namespace gui
 		return this->columns;
 	}
 
-	int viewer::getByteColor(byte b, unsigned long long index)
+	int viewer::getByteColor(byte b, unsigned long long index, unsigned long long cursor)
 	{
 		int c = (int)((unsigned char)b);
-		if (index < headerLength) return 4;
+		if (index == cursor) return 9;
+		else if (index < headerLength) return 4;
 		else if (c == 0x00) return 2;		// RED
 		else if (c <= 0x0f) return 7;		// CYAN
 		else if (c <= 0x1f) return 5;		// BLUE
@@ -103,7 +111,7 @@ namespace gui
 					file.incCursor();
 
 					// Get appropriate color for byte.
-					int color = getByteColor(current, (r*columns*8)+(c*8)+b);
+					int color = getByteColor(current, (r*columns*8)+(c*8)+b, cursor);
 					wattron(window, COLOR_PAIR(color));
 
 					// Draw hex representation of byte.

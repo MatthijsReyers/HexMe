@@ -1,7 +1,6 @@
 #pragma once
 
 #include "./../../exceptions/exceptions.h"
-#include "./../../utils/hdetect/hdetect.h"
 
 #include <string>
 #include <fstream>

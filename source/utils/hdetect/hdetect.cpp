@@ -12,8 +12,11 @@ std::map<std::string, std::vector<int>> headers;
 
 namespace utils
 {
-    std::string getFileHeaderType(std::fstream &file)
+    std::string getFileHeaderType(utils::file &f)
     {
+        // Get current cursor position.
+        auto cursor = f.getCursorLocation();
+
         // File headers and assosicated bytes. (-1 is used a wildcard).
         headers["AVI (Audio Video Interleave video format)"] = {0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x41, 0x56, 0x49, 0x20};
         headers["BPG (Better Portable Graphics format)"] = {0x42, 0x50, 0x47, 0xFB};
@@ -55,11 +58,19 @@ namespace utils
         headers["WAV (Waveform Audio File format)"] = {0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45};
         headers["Windows Update Binary (Delta Compression)"] = {0x44, 0x43, 0x4D, 0x01, 0x50, 0x41, 0x33, 0x30};
         headers["XML (eXtensible Markup Language)"] = {0x3c, 0x3f, 0x78, 0x6d, 0x6c, 0x20};
+        
+        // Move cursor to file start.
+        f.moveCursor(0);
 
         // Load first 32 bytes of file into buffer.
         int buffer[32];
-        for (int i = 0; i < 32; i++) 
-            buffer[i] = file.get();
+        for (int i = 0; i < 32; i++) {
+            buffer[i] = f.getCurrentByte();
+            f.incCursor();
+        }
+
+        // Reset cursor.
+        f.moveCursor(cursor);
 
         // Compare headers with simple linear search.
         for (auto const &item : headers)

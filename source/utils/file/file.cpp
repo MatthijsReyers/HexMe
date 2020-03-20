@@ -1,4 +1,6 @@
-#include "./file.h"
+#include "file.h"
+
+#include "./../../utils/hdetect/hdetect.h"
 
 namespace utils
 {
@@ -29,7 +31,7 @@ namespace utils
         this->url = url;
         this->fileStream->open(url, std::ios::out | std::ios::binary | std::ios::in);
         this->fileBuffer = fileStream->rdbuf();
-        this->header = utils::getFileHeaderType(*fileStream);
+        this->header = utils::getFileHeaderType(*this);
         return *this;
     }
 
@@ -53,23 +55,28 @@ namespace utils
 
     unsigned long long file::getCursorLocation()
     {
-        return 5;
+        return fileStream->tellg();
     }
 
     file& file::resetCursor()
     {
         fileBuffer->pubseekpos(0);
+        fileStream->seekg(0);
+        fileStream->seekp(0);
         return *this;
     }
 
     file& file::moveCursor(unsigned long long location)
     {
         fileBuffer->pubseekpos(location);
+        fileStream->seekg(location);
+        fileStream->seekp(location);
         return *this;
     }
 
     file& file::incCursor()
     {
+        moveCursor(getCursorLocation()+1);
         return *this;
     }
 
@@ -80,7 +87,9 @@ namespace utils
 
     byte file::getCurrentByte()
     {
-        return fileBuffer->sbumpc();
+        auto res = fileBuffer->sbumpc();
+        fileBuffer->sungetc();
+        return res;
     }
 
     // byte* file::getCurrentBytesN(const int n)
