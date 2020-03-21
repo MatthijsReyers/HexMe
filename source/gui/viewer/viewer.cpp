@@ -154,7 +154,6 @@ namespace gui
 			}
 		}
 		
-		
 		for (int c = 1; c < columns; c++) {
 			mvwprintw(window, 1+r, 11 + c*26, "│");
 			mvwprintw(window, 1+r, 11 + columns*26 + c*11, "│");
