@@ -105,14 +105,6 @@ namespace gui
 		mvwprintw(window, 1+r, 2, zeros.c_str());
 		wattroff(window, COLOR_PAIR(9));
 
-		ss.clear();
-		ss << "  (x:" << std::dec << getXofCursor(cursor) << ", y:" << getYofCursor(cursor);
-		ss << ", row:" << std::hex << getYofCursor(cursor)*(columns*8);
-		ss << ", topRow:" << std::hex << topRow;
-		ss << ", cursor:" << std::hex << cursor;
-		ss << ", fileend:" << std::hex << file.getFileEnd() << ")  ";
-		mvaddstr(0,0,ss.str().c_str());
-
 		// Set cursor to start of row.
 		file.moveCursor(rowIndex);
 
