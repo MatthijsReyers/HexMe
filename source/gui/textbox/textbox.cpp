@@ -36,6 +36,10 @@ namespace gui
 
         else switch (key)
         {
+            case ESCAPE:
+                this->focus = false;
+                break;
+
             case BACKSPACE:
                 if (text.length() > 0 && cursorPosition > 0) {
                     text.erase(cursorPosition-1, 1);
