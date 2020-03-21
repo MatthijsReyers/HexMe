@@ -53,6 +53,15 @@ namespace utils
         return header;
     }
 
+    unsigned long long file::getFileEnd()
+    {
+        auto cursor = getCursorLocation();
+        moveCursor(0);
+        auto res = getBytesAfterCursor() - 1;
+        moveCursor(cursor);
+        return res;
+    }
+
     unsigned long long file::getCursorLocation()
     {
         return fileStream->tellg();

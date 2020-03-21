@@ -22,16 +22,16 @@ namespace gui
         int width, height;
         int columns, rows; 
 
-        unsigned long int rowIndex = 0;
-        unsigned long int headerLength = 0;
+        unsigned long long topRow = 0;
+        unsigned long long headerLength = 0;
 
         void drawRow(unsigned long long r);
         void drawBorders();
 
         int getByteColor(byte b, unsigned long long index, unsigned long long cursor);
 
-        unsigned long int getRowFromIndex(const unsigned long long index);
-        unsigned long int getYFromIndex(const unsigned long long index);
+        unsigned long long getYofCursor(const unsigned long long cursor);
+        unsigned long long getXofCursor(const unsigned long long cursor);
 
     public:
         viewer(utils::file File);

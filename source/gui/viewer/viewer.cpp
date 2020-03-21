@@ -54,10 +54,18 @@ namespace gui
 
 	viewer& viewer::onMoveCursor(int direction)
 	{
+		// Update file cursor position.
 		unsigned long long cursor = file.getCursorLocation() + direction;
-		if (direction > 0) file.moveCursor(cursor);
+		if (cursor > file.getFileEnd()) return *this;
+		else if (direction > 0) file.moveCursor(cursor);
 		else if (file.getCursorLocation() < (unsigned long long)(-direction)) return *this;
 		else file.moveCursor(cursor);
+
+		// Check if top row needs to be moved.
+		unsigned long long lastIndexDisplayed = 8 * columns * (rows + topRow) - 1;
+		if (lastIndexDisplayed < cursor) topRow++;
+		else if (topRow*columns*8 > cursor) topRow--;
+
 		return *this;
 	}
 
@@ -84,19 +92,41 @@ namespace gui
 		auto cursor = file.getCursorLocation();
 
 		// Row number.
-		int index = rowIndex + (r * columns * 8);
+		unsigned long long rowIndex = ((r+topRow) * columns * 8);
 		std::stringstream ss;
-		ss << std::hex << index;
+		ss << std::hex << rowIndex;
 		std::string zeros = "00000000";
 		zeros.erase(zeros.length() - ss.str().length());
 		zeros.append(ss.str());
+
+		// Draw & color row number.
+		if (rowIndex == getYofCursor(cursor)*columns*8)
+			wattron(window, COLOR_PAIR(9));
 		mvwprintw(window, 1+r, 2, zeros.c_str());
+		wattroff(window, COLOR_PAIR(9));
+
+		ss.clear();
+		ss << "  (x:" << std::dec << getXofCursor(cursor) << ", y:" << getYofCursor(cursor);
+		ss << ", row:" << std::hex << getYofCursor(cursor)*(columns*8);
+		ss << ", topRow:" << std::hex << topRow;
+		ss << ", cursor:" << std::hex << cursor;
+		ss << ", fileend:" << std::hex << file.getFileEnd() << ")  ";
+		mvaddstr(0,0,ss.str().c_str());
 
 		// Set cursor to start of row.
-		file.moveCursor(r * columns * 8);
+		file.moveCursor(rowIndex);
 
-		for (int c = 0; c < columns; c++)
-			for (int b = 0; b < 8; b++)
+		if (file.getFileEnd() < rowIndex) {
+			for (int c = 0; c < columns; c++) {
+				for (int b = 0; b < 8; b++) {
+					mvwprintw(window, 1+r, 13 + c*26 + b*3, "  ");
+					mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, " ");;
+				}
+			}
+		}
+
+		else for (int c = 0; c < columns; c++) {
+			for (int b = 0; b < 8; b++) {
 				// Check if there are any bytes left in the buffer.
 				if (file.getBytesAfterCursor() == 0) {
 					mvwprintw(window, 1+r, 13 + c*26 + b*3, "  ");
@@ -108,7 +138,7 @@ namespace gui
 					file.incCursor();
 
 					// Get appropriate color for byte.
-					int color = getByteColor(current, (r*columns*8)+(c*8)+b, cursor);
+					int color = getByteColor(current, ((r+topRow)*columns*8)+(c*8)+b, cursor);
 					wattron(window, COLOR_PAIR(color));
 
 					// Draw hex representation of byte.
@@ -121,7 +151,10 @@ namespace gui
 					// Disable color again.
 					wattroff(window, COLOR_PAIR(color));
 				}
-
+			}
+		}
+		
+		
 		for (int c = 1; c < columns; c++) {
 			mvwprintw(window, 1+r, 11 + c*26, "│");
 			mvwprintw(window, 1+r, 11 + columns*26 + c*11, "│");
@@ -178,8 +211,13 @@ namespace gui
 		}
 	}
 
-	unsigned long int viewer::getRowFromIndex(const unsigned long long index)
+	unsigned long long viewer::getYofCursor(unsigned long long cursor)
 	{
-		return index;
+		return cursor / (columns*8);
+	}
+
+	unsigned long long viewer::getXofCursor(unsigned long long cursor)
+	{
+		return cursor % (columns*8);
 	}
 }
