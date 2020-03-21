@@ -18,7 +18,6 @@ namespace gui
 
     textbox& textbox::onRefresh()
     {
-        wclear(window);
         mvwprintw(window, 0, 0, "> ");
         mvwprintw(window, 0, 2, text.c_str());
         wmove(window, 0, 2+cursorPosition);
@@ -28,8 +27,7 @@ namespace gui
 
     textbox& textbox::onInput(int key)
     {
-        if (key >= 32 && key <= 126)
-        {
+        if (key >= 32 && key <= 126) {
             text.insert(cursorPosition,{char(key)});
             cursorPosition++;
         }

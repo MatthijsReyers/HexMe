@@ -101,6 +101,11 @@ app& app::run()
 			cmdPromt->onRefresh();
 		}
 
+		else if (input == KEY_ENTER) {
+			auto cmd = cmdPromt->getText();
+			cmdPromt->clearText();
+		}
+
 		else if (cmdPromt->focus) {
 			cmdPromt->onInput(input);
 			cmdPromt->onRefresh();
@@ -111,18 +116,22 @@ app& app::run()
 			case KEY_DOWN:
 				hexView->onMoveCursor(hexView->getColumnCount()*8);
 				hexView->onRefresh();
+				cmdPromt->onRefresh();
 				break;
 			case KEY_UP:
 				hexView->onMoveCursor(hexView->getColumnCount()*-8);
 				hexView->onRefresh();
+				cmdPromt->onRefresh();
 				break;
 			case KEY_LEFT:
 				hexView->onMoveCursor(-1);
 				hexView->onRefresh();
+				cmdPromt->onRefresh();
 				break;
 			case KEY_RIGHT:
 				hexView->onMoveCursor(1);
 				hexView->onRefresh();
+				cmdPromt->onRefresh();
 				break;
 			default:
 				cmdPromt->focus = true;
