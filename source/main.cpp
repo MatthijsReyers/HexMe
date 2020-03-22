@@ -3,7 +3,7 @@
 #include "./gui/textbox/textbox.h"
 #include "./gui/viewer/viewer.h"
 
-#include "./utils/argparse/argparse.h"
+#include "./utils/argparser/argparser.h"
 #include "./utils/file/file.h"
 
 #include <fstream>
@@ -61,7 +61,9 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 
 	// Draw file name and header.
 	std::stringstream ss;
-	ss << file.getFileName() << " | " << file.getHeader();
+	ss << file.getFileName();
+	if (file.getHeader() != "")
+		ss << " | " << file.getHeader();
 	mvaddstr(0,0,ss.str().c_str());
 
 	// Initial refresh.

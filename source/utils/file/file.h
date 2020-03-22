@@ -27,6 +27,9 @@ namespace utils
 
         file& close();
 
+        file& save();
+        bool hasUnsavedChanges();
+
         std::string getFileName();
         std::string getHeader();
 

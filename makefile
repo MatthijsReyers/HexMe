@@ -9,9 +9,9 @@ OUTPUTFOLDER = ./bin/
 OUTPUTEXEC = hexme
 MAINFILE = main.cpp
 
-OBJECTS = $(OBJECTFOLDER)argparse.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o
+OBJECTS = $(OBJECTFOLDER)argparser.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o
 
-main: exceptions argparse file hdetect converters textbox viewer
+main: exceptions argparser file hdetect converters textbox viewer
 	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
 
 setup:
@@ -35,8 +35,8 @@ settings:
 
 # Utils namespace
 # =======================================================
-argparse:
-	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/argparse/argparse.cpp -o $(OBJECTFOLDER)argparse.o 
+argparser:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/argparser/argparser.cpp -o $(OBJECTFOLDER)argparser.o 
 
 file:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/file/file.cpp -o $(OBJECTFOLDER)file.o 
