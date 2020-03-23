@@ -26,13 +26,13 @@ namespace gui
 
         bool focus = false;
 
-        textbox& onRefresh() noexcept;
-        textbox& onInput(const int key) noexcept;
-        textbox& onResize() noexcept;
+        textbox& onRefresh();
+        textbox& onInput(const int key);
+        textbox& onResize();
 
-        std::string& getText() noexcept;
-        textbox& setText(const std::string text) noexcept;
-        textbox& setText(const char* text) noexcept;
-        textbox& clearText() noexcept;
+        std::string& getText();
+        textbox& setText(const std::string text);
+        textbox& setText(const char* text);
+        textbox& clearText();
     };
 }

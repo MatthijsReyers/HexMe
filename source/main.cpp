@@ -4,6 +4,7 @@
 #include "./gui/viewer/viewer.h"
 
 #include "./utils/argparser/argparser.h"
+#include "./utils/cmdparser/cmdparser.h"
 #include "./utils/file/file.h"
 
 #include <fstream>
@@ -89,6 +90,11 @@ app& app::run()
 		// Get user input.
 		int input = getch();
 
+		std::stringstream ss;
+		ss << input;
+		mvaddstr(0,0,ss.str().c_str());
+		refresh();
+
 		if (input == KEY_RESIZE)
 		{
 			// Update all window content.
@@ -103,9 +109,12 @@ app& app::run()
 			cmdPromt->onRefresh();
 		}
 
-		else if (input == KEY_ENTER) {
+		else if (input == 10 /*KEY_ENTER*/) {
 			auto cmd = cmdPromt->getText();
+			utils::cmdparser cmdParser(file);
+			cmdParser.executeCmd(cmd);
 			cmdPromt->clearText();
+			hexView->onRefresh();
 		}
 
 		else if (cmdPromt->focus) {

@@ -2,18 +2,22 @@
 
 #include "./../file/file.h"
 
+#include <sstream>
 #include <string>
 #include <map>
 #include <vector>
+
 
 namespace utils
 {
     class cmdparser
     {
     private:
+        typedef bool (cmdparser::*method)(std::vector<std::string>* tokens);
+
         std::string error;
         utils::file& file;
-        std::map<std::string, bool(utils::cmdparser::*)(std::vector<std::string, std::allocator<std::string>> *tokens)> commands;
+        std::map<std::string,method> commands;
 
         std::vector<std::string>* lexer(std::string cmd);
 

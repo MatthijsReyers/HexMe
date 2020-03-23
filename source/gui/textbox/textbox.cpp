@@ -83,7 +83,7 @@ namespace gui
         return *this;
     }
 
-    textbox& textbox::onResize() noexcept
+    textbox& textbox::onResize()
     {
         int y = getmaxy(stdscr) - 1;
         int width = getmaxx(stdscr) - 2;
@@ -109,10 +109,11 @@ namespace gui
         return *this;
     }
 
-    textbox& textbox::clearText() noexcept
+    textbox& textbox::clearText()
     {
         cursorPosition = 0;
-        this->text.clear();
+        text.clear();
+        wclear(window);
         this->onRefresh();
         return *this;
     }
