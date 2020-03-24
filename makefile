@@ -9,10 +9,16 @@ OUTPUTFOLDER = ./bin/
 OUTPUTEXEC = hexme
 MAINFILE = main.cpp
 
-OBJECTS = $(OBJECTFOLDER)argparser.o $(OBJECTFOLDER)cmdparser.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o
+OBJECTS = $(OBJECTFOLDER)argparser.o $(OBJECTFOLDER)cmdparser.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
 
-main: exceptions argparser cmdparser file hdetect converters textbox viewer
+main: exceptions argparser cmdparser file hdetect converters textbox viewer app
 	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
+
+app:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)app/app.cpp -o $(OBJECTFOLDER)app.o 
+
+cmdparser:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)app/cmdparser/cmdparser.cpp -o $(OBJECTFOLDER)cmdparser.o 
 
 setup:
 	clear
@@ -37,9 +43,6 @@ settings:
 # =======================================================
 argparser:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/argparser/argparser.cpp -o $(OBJECTFOLDER)argparser.o 
-
-cmdparser:
-	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/cmdparser/cmdparser.cpp -o $(OBJECTFOLDER)cmdparser.o 
 
 file:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/file/file.cpp -o $(OBJECTFOLDER)file.o 
