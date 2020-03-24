@@ -121,9 +121,9 @@ namespace utils
         auto cursor = getCursorLocation();
         auto end = getFileEnd();
         
-        // Place temporary new byte at file end to make room.
+        // Place temporary new byte at file end to make room for shifting.
         moveCursor(end+1);
-        fileBuffer->sputc('=');
+        fileBuffer->sputc(newByte);
 
         // Shift over all bytes in front of cursor to make room for new byte.
         for (unsigned long long i = end+1; i > cursor; i--) {
@@ -168,9 +168,7 @@ namespace utils
 
     file& file::replaceByte(const byte in)
     {
-        incCursor();
         fileBuffer->sputc(in);
-        decCursor();
         return (*this);
     }
 

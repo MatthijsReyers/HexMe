@@ -41,8 +41,17 @@ bool cmdparser::onSave(std::vector<std::string>* tokens)
 
 bool cmdparser::onInsert(std::vector<std::string>* tokens)
 {
+    // Something must be given after replace.
+    if (tokens->size() < 2) {
+        this->error = "Please give bytes to insert.";
+        return false;
+    }
+    
+    // Do some magic with the tokens.
     const char* toInsert = (*tokens)[1].c_str();
     const int length = (*tokens)[1].length();
+
+    // Replace bytes at cursor.
     file.insertBytes(toInsert, length);
     return true;
 }
@@ -51,7 +60,7 @@ bool cmdparser::onReplace(std::vector<std::string>* tokens)
 {
     // Something must be given after replace.
     if (tokens->size() < 2) {
-        this->error = "Please give bytes to replace bytes at cursor with.";
+        this->error = "Please give bytes to replace the bytes at cursor with.";
         return false;
     }
     
