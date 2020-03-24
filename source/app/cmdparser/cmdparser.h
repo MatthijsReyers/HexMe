@@ -22,6 +22,8 @@ private:
 
     bool onExit(std::vector<std::string>* tokens);
     bool onSave(std::vector<std::string>* tokens);
+    bool onInsert(std::vector<std::string>* tokens);
+    bool onReplace(std::vector<std::string>* tokens);
     bool onMove(std::vector<std::string>* tokens);
 
 public:

@@ -1,6 +1,7 @@
 #include "file.h"
 
 #include "./../../utils/hdetect/hdetect.h"
+#include <unistd.h>
 
 namespace utils
 {
@@ -95,6 +96,14 @@ namespace utils
         return *this;
     }
 
+    file& file::decCursor()
+    {
+        auto cursor = getCursorLocation();
+        if (cursor != 0)
+            moveCursor(cursor-1);
+        return *this;
+    }
+
     unsigned long long file::getBytesAfterCursor()
     {
         return fileBuffer->in_avail();
@@ -107,18 +116,61 @@ namespace utils
         return res;
     }
 
-    // byte* file::getCurrentBytesN(const int n)
-    // {
-    //     return new byte[8]{0x03, 0x02, 0x0F, 0x06, 0x0A, 0x04, 0x02, 0x10};
+    file& file::insertByte(const byte newByte)
+    {
+        auto cursor = getCursorLocation();
+        auto end = getFileEnd();
+        
+        // Place temporary new byte at file end to make room.
+        moveCursor(end+1);
+        fileBuffer->sputc('=');
 
-    //     byte* result = new byte[n];
-    //     fileBuffer->sgetn(result,n);
-    //     return result;
-    // }
+        // Shift over all bytes in front of cursor to make room for new byte.
+        for (unsigned long long i = end+1; i > cursor; i--) {
+            moveCursor(i-1);
+            byte current = getCurrentByte();
+            moveCursor(i);
+            fileBuffer->sputc(current);
+        }
+
+        // Move cursor back and finnally insert byte.
+        moveCursor(cursor);
+        replaceByte(newByte);
+
+        // Return reference to self.
+        return *this;
+    }
+
+    file& file::insertBytes(const byte* bytes, const int n)
+    {
+        auto cursor = getCursorLocation();
+        auto end = getFileEnd();
+        
+        // Place new bytes at file end to make room for shifting over all bytes.
+        moveCursor(end+1);
+        fileBuffer->sputn(bytes, n);
+
+        // Shift over all bytes in front of cursor to make room for new byte.
+        for (unsigned long long i = end+1; i > cursor; i--) {
+            moveCursor(i-n);
+            byte current = getCurrentByte();
+            moveCursor(i);
+            fileBuffer->sputc(current);
+        }
+
+        // Move cursor back and finnally insert byte.
+        moveCursor(cursor);
+        fileBuffer->sputn(bytes, n);
+
+        // Return reference to self.
+        return *this;
+    }
 
     file& file::replaceByte(const byte in)
     {
+        incCursor();
         fileBuffer->sputc(in);
+        decCursor();
         return (*this);
     }
 

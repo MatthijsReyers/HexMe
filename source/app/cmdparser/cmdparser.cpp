@@ -6,6 +6,8 @@ cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
     this->commands["exit"] = &cmdparser::onExit;
     this->commands["save"] = &cmdparser::onSave;
+    this->commands["insert"] = &cmdparser::onInsert;
+    this->commands["replace"] = &cmdparser::onReplace;
 }
 
 std::vector<std::string>* cmdparser::lexer(std::string cmd)
@@ -37,6 +39,31 @@ bool cmdparser::onSave(std::vector<std::string>* tokens)
     }
 }
 
+bool cmdparser::onInsert(std::vector<std::string>* tokens)
+{
+    const char* toInsert = (*tokens)[1].c_str();
+    const int length = (*tokens)[1].length();
+    file.insertBytes(toInsert, length);
+    return true;
+}
+
+bool cmdparser::onReplace(std::vector<std::string>* tokens)
+{
+    // Something must be given after replace.
+    if (tokens->size() < 2) {
+        this->error = "Please give bytes to replace bytes at cursor with.";
+        return false;
+    }
+    
+    // Do some magic with the tokens.
+    const char* newBytes = (*tokens)[1].c_str();
+    const int length = (*tokens)[1].length();
+
+    // Replace bytes at cursor.
+    file.replaceBytes(newBytes, length);
+    return true;
+}
+
 bool cmdparser::executeCmd(std::string& cmd)
 {
     // Spit command up into tokens.
@@ -58,7 +85,8 @@ bool cmdparser::executeCmd(std::string& cmd)
 
     // Comand does not exist.
     else {
-        this->error = "Please enter a command to execute.";
+        mvaddstr(0,0,"That command does not exist.");
+        this->error = "That command does not exist.";
         delete tokens;
         return false;
     }

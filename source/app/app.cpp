@@ -75,6 +75,7 @@ app& app::run()
 			auto cmd = cmdPromt->getText();
 			cmdparser cmdParser(file,this);
 			cmdParser.executeCmd(cmd);
+			hexView->onMoveCursor(0);
 			hexView->onRefresh();
 			cmdPromt->clearText();
 		}
