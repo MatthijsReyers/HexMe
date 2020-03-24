@@ -43,7 +43,9 @@ namespace gui
                     text.erase(cursorPosition-1, 1);
                     if (cursorPosition > 0)
                         cursorPosition--;
-                } break;
+                } 
+                wclear(window);
+                break;
 
             case CRTL_BACKSPACE:
                 while (text.length() > 0 && cursorPosition > 0 && text[cursorPosition-1] != ' ') {
@@ -55,11 +57,14 @@ namespace gui
                     text.erase(cursorPosition-1, 1);
                     if (cursorPosition > 0)
                         cursorPosition--;
-                } break;
+                } 
+                wclear(window);
+                break;
 
             case DELETE:
                 if (text.length() > 0 && cursorPosition < text.length())
                     text.erase(cursorPosition, 1);
+                wclear(window);
                 break;
 
             case KEY_HOME:
@@ -88,7 +93,7 @@ namespace gui
         int y = getmaxy(stdscr) - 1;
         int width = getmaxx(stdscr) - 2;
         wresize(window, 1, width);
-        wmove(window, y, 0);
+        mvwin(window, y, 0);
         return *this;
     }
 

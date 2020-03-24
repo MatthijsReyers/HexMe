@@ -1,8 +1,11 @@
 #include "cmdparser.h"
 
+#include <curses.h>
+
 cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
     this->commands["exit"] = &cmdparser::onExit;
+    this->commands["save"] = &cmdparser::onSave;
 }
 
 std::vector<std::string>* cmdparser::lexer(std::string cmd)
@@ -23,8 +26,20 @@ bool cmdparser::onExit(std::vector<std::string>* tokens)
     return false;
 }
 
+bool cmdparser::onSave(std::vector<std::string>* tokens)
+{
+    try {
+        file.save();
+        return true;
+    }
+    catch(const std::exception& e) {
+        return false;
+    }
+}
+
 bool cmdparser::executeCmd(std::string& cmd)
 {
+    // Spit command up into tokens.
     auto tokens = lexer(cmd);
     
     // A command is at least one token long.
@@ -37,8 +52,8 @@ bool cmdparser::executeCmd(std::string& cmd)
     // Check if given command exists.
     else if (commands.find((*tokens)[0]) != commands.end()) {
         std::string name = (*tokens)[0];
-        method test1 = commands[name];
-        return (this->*test1)(tokens);
+        method command = commands[name];
+        return (this->*command)(tokens);
     }
 
     // Comand does not exist.

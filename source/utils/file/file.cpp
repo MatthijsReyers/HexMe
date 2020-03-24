@@ -42,6 +42,12 @@ namespace utils
         return *this;
     }
 
+    file& file::save()
+    {
+        this->fileBuffer->pubsync();
+        return *this;
+    }
+
     std::string file::getFileName()
     {
         std::size_t found = url.find_last_of("/\\");

@@ -1,4 +1,5 @@
 #include "app.h"
+#include "./cmdparser/cmdparser.h"
 
 app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 {
@@ -56,11 +57,6 @@ app& app::run()
 		// Get user input.
 		int input = getch();
 
-		std::stringstream ss;
-		ss << input;
-		mvaddstr(0,0,ss.str().c_str());
-		refresh();
-
 		if (input == KEY_RESIZE)
 		{
 			// Update all window content.
@@ -79,8 +75,8 @@ app& app::run()
 			auto cmd = cmdPromt->getText();
 			cmdparser cmdParser(file,this);
 			cmdParser.executeCmd(cmd);
-			cmdPromt->clearText();
 			hexView->onRefresh();
+			cmdPromt->clearText();
 		}
 
 		else if (cmdPromt->focus) {

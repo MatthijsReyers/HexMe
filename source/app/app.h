@@ -1,7 +1,6 @@
 #pragma once
 
 #include "./../exceptions/exceptions.h"
-#include "./cmdparser/cmdparser.h"
 
 #include "./../gui/textbox/textbox.h"
 #include "./../gui/viewer/viewer.h"
