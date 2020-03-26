@@ -33,7 +33,6 @@ namespace utils
         std::string getFileName();
         std::string getHeader();
 
-        unsigned long long getFileStart();
         unsigned long long getFileEnd();
         unsigned long long getCursorLocation();
 
