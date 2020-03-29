@@ -1,9 +1,6 @@
 
-- Cmdparser: Create new exception to be thrown at syntax error.
-- Cmdparser: String does not have to be closed with a ".
-- Viewer: Resizing may break cursor position.
-- App: GUI should not be in charge of the file cursor position.
 - Utils: clean up string escaping.
+- Cmdparser: use smart pointer for storing tokens.
 
 ╔═══════════════════════════════════════════════════╗
 ║ 
@@ -14,16 +11,10 @@
 
 EXAMPLE COMMANDS
 
-====== SAVE ======
-save 
-save copy
-
 ====== EXIT ======
 exit
-exit nosave
 
 ====== INSERT =======
-insert x0 x93 x32 xFF
 insert "These ascii chars"
 
 ======= FIND =======

@@ -34,10 +34,16 @@ namespace gui
 
         else switch (key)
         {
-            case KEY_UP:
-            case KEY_DOWN:
             case ESCAPE:
                 this->focus = false;
+                break;
+
+            case KEY_UP:
+                //TODO: command history
+                break;
+
+            case KEY_DOWN:
+                //TODO: command history
                 break;
 
             case BACKSPACE:
