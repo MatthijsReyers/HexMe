@@ -27,9 +27,6 @@ namespace utils
 
         file& close();
 
-        file& save();
-        bool hasUnsavedChanges();
-
         std::string getFileName();
         std::string getHeader();
 
@@ -39,9 +36,9 @@ namespace utils
         file& resetCursor();
         file& moveCursor(unsigned long long location);
         file& incCursor();
-        file& incCursor(int n);
+        file& incCursor(const unsigned long long n);
         file& decCursor();
-        file& decCursor(int n);
+        file& decCursor(const unsigned long long n);
 
         unsigned long long getBytesAfterCursor();
 

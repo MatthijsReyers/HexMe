@@ -1,7 +1,5 @@
 #include "cmdparser.h"
 
-#include <curses.h>
-
 cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
     this->commands["exit"] = &cmdparser::onExit;
@@ -12,12 +10,42 @@ cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 
 std::vector<std::string>* cmdparser::lexer(std::string cmd)
 {
+    // Vector to output.
     auto res = new std::vector<std::string>();
+
+    // Remove trailing spaces behind cmd string.
+    while (cmd.back() == ' ')
+        cmd.pop_back();
+
+    // Parse keywords.
     std::stringstream ss(cmd);
     std::string segment;
     while (std::getline(ss, segment, ' '))
+    {
+        // If the segment is a string. (<= Surrounded by "".)
+        if (segment.length() > 0 && segment[0] == '"') {
+
+            // String must also have closing bracket/quote.
+            if (cmd[cmd.size()-1] != '"')
+                /* Throw syntax error */
+                throw std::exception();
+
+            // Get full string.
+            segment = cmd.substr(cmd.find(segment)+1, cmd.size()-1);
+            segment.pop_back();
+
+            // Take care of escaped characters in string.
+            segment = utils::stringtools::escape(segment);
+
+            // Push to output and break while loop.
+            res->push_back(segment);
+            break;
+        }
+
+        // Output vector may not include empty items.
         if (segment != "")
             res->push_back(segment);
+    }
     return res;
 }
 
@@ -43,8 +71,8 @@ void cmdparser::onGoto(std::vector<std::string>* tokens)
         file.moveCursor(file.getFileEnd());
 
     // Hex or decimal notation.
-    else if (type == "hex" || type == "dec") {
-
+    else if (type == "hex" || type == "dec")
+    {
         // Catch syntax errors.
         if (tokens->size() < 3)
             throw CmdSyntaxErrorException("Please give a number after hex/dec.");
@@ -86,6 +114,8 @@ void cmdparser::onInsert(std::vector<std::string>* tokens)
     // Something must be given after replace.
     if (tokens->size() < 2)
         throw CmdSyntaxErrorException("Please give bytes to insert.");
+    if (tokens->size() > 3)
+        throw CmdSyntaxErrorException("Please use the proper syntax for the insert command.");
     
     // Do some magic with the tokens.
     const char* toInsert = (*tokens)[1].c_str();
@@ -110,6 +140,7 @@ void cmdparser::onReplace(std::vector<std::string>* tokens)
         file.replaceBytes(newBytes, length);
     }
 }
+
 
 void cmdparser::executeCmd(std::string& cmd)
 {

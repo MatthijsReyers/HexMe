@@ -1,11 +1,9 @@
 
-
- - replace bytes XXX with bytes YYY.
- - delete bytes x till y
- - insert bytes at cursor.
- - delete byte at cursor.
- - modify byte at cursor. 
-
+- Cmdparser: Create new exception to be thrown at syntax error.
+- Cmdparser: String does not have to be closed with a ".
+- Viewer: Resizing may break cursor position.
+- App: GUI should not be in charge of the file cursor position.
+- Utils: clean up string escaping.
 
 ╔═══════════════════════════════════════════════════╗
 ║ 

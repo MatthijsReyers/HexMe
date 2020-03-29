@@ -1,5 +1,7 @@
 #include "viewer.h"
 
+#include <sstream>
+
 namespace gui
 {
 	viewer::viewer(utils::file File) : file(File)
@@ -22,8 +24,27 @@ namespace gui
 
 	viewer& viewer::onRefresh()
 	{
+		auto cursor = file.getCursorLocation();
+		auto cursorRow = cursor / (columns*8);
+		auto lastRow = file.getFileEnd() / (columns*8);
+		auto bottomRow = topRow + rows - 1;
+		
+		// Check: there can never be an empty row unless the window is bigger than the file.
+		if (bottomRow > lastRow)
+			topRow = lastRow - rows + 1;
+
+		// Check: is the top row below the cursor?
+		if (topRow > cursorRow)
+			topRow = cursorRow;
+
+		// Check: is the bottom row above the cursor?
+		if (cursorRow > bottomRow)
+			topRow = cursorRow - rows + 1;
+
+		// Draw all rows to terminal.
 		for (int r = 0; r < rows; r++)
 			this->drawRow(r);
+
 		wrefresh(window);
 		return *this;
 	}
@@ -48,23 +69,6 @@ namespace gui
 		this->drawBorders();
 		for (int r = 0; r < rows; r++)
 			this->drawRow(r);
-
-		return *this;
-	}
-
-	viewer& viewer::onMoveCursor(int direction)
-	{
-		// Update file cursor position.
-		unsigned long long cursor = file.getCursorLocation() + direction;
-		if (cursor > file.getFileEnd()) return *this;
-		else if (direction > 0) file.moveCursor(cursor);
-		else if (file.getCursorLocation() < (unsigned long long)(-direction)) return *this;
-		else file.moveCursor(cursor);
-
-		// Check if top row needs to be moved.
-		unsigned long long lastIndexDisplayed = 8 * columns * (rows + topRow) - 1;
-		if (lastIndexDisplayed < cursor) topRow++;
-		else if (topRow*columns*8 > cursor) topRow--;
 
 		return *this;
 	}
@@ -120,14 +124,14 @@ namespace gui
 		else for (int c = 0; c < columns; c++) {
 			for (int b = 0; b < 8; b++) {
 				// Check if there are any bytes left in the buffer.
-				if (file.getBytesAfterCursor() == 0) {
+				if (file.getCursorLocation() > file.getFileEnd()) {
 					mvwprintw(window, 1+r, 13 + c*26 + b*3, "  ");
 					mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, " ");
 				}
 				else {
 					// Get byte & increment file cursor.
 					byte current = file.getCurrentByte();
-					file.incCursor();
+					file.moveCursor(file.getCursorLocation()+1);
 
 					// Get appropriate color for byte.
 					int color = getByteColor(current, ((r+topRow)*columns*8)+(c*8)+b, cursor);

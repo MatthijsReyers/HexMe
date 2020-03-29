@@ -39,7 +39,6 @@ namespace gui
         
         viewer& onRefresh();
         viewer& onResize();
-        viewer& onMoveCursor(int direction);
 
         int getColumnCount();
     };

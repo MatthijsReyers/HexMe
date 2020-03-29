@@ -9,9 +9,9 @@ OUTPUTFOLDER = ./bin/
 OUTPUTEXEC = hexme
 MAINFILE = main.cpp
 
-OBJECTS = $(OBJECTFOLDER)argparser.o $(OBJECTFOLDER)cmdparser.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
+OBJECTS = $(OBJECTFOLDER)argparser.o $(OBJECTFOLDER)cmdparser.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)escape.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
 
-main: exceptions argparser cmdparser file hdetect converters textbox viewer app
+main: exceptions argparser cmdparser file hdetect converters stringtools textbox viewer app
 	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
 
 app:
@@ -52,6 +52,9 @@ hdetect:
 
 converters:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/converters/converters.cpp -o $(OBJECTFOLDER)converters.o 
+
+stringtools:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)utils/stringtools/escape.cpp -o $(OBJECTFOLDER)escape.o 
 
 # Gui namespace
 # =======================================================

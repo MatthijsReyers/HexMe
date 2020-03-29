@@ -2,6 +2,8 @@
 
 #include "./../../utils/hdetect/hdetect.h"
 #include <unistd.h>
+#include <ncurses.h>
+#include <sstream>
 
 namespace utils
 {
@@ -43,12 +45,6 @@ namespace utils
         return *this;
     }
 
-    file& file::save()
-    {
-        this->fileBuffer->pubsync();
-        return *this;
-    }
-
     std::string file::getFileName()
     {
         std::size_t found = url.find_last_of("/\\");
@@ -64,7 +60,7 @@ namespace utils
     {
         auto cursor = getCursorLocation();
         moveCursor(0);
-        auto res = getBytesAfterCursor() - 1;
+        auto res = getBytesAfterCursor();
         moveCursor(cursor);
         return res;
     }
@@ -92,7 +88,17 @@ namespace utils
 
     file& file::incCursor()
     {
-        moveCursor(getCursorLocation()+1);
+        auto cursor = getCursorLocation();
+        if (cursor < getFileEnd())
+            moveCursor(getCursorLocation()+1);
+        return *this;
+    }
+
+    file& file::incCursor(const unsigned long long n)
+    {
+        auto res = getCursorLocation() + n;
+        if (res <= getFileEnd())
+            moveCursor(res);
         return *this;
     }
 
@@ -104,9 +110,16 @@ namespace utils
         return *this;
     }
 
+    file& file::decCursor(const unsigned long long n)
+    {
+        if (n <= getCursorLocation())
+            moveCursor(getCursorLocation() - n);
+        return *this;
+    }
+
     unsigned long long file::getBytesAfterCursor()
     {
-        return fileBuffer->in_avail();
+        return fileBuffer->in_avail() - 1;
     }
 
     byte file::getCurrentByte()
@@ -115,6 +128,8 @@ namespace utils
         fileBuffer->sungetc();
         return res;
     }
+
+    // byte* file::getCurrentBytesN(const int n)
 
     file& file::insertByte(const byte newByte)
     {
@@ -151,7 +166,8 @@ namespace utils
         fileBuffer->sputn(bytes, n);
 
         // Shift over all bytes in front of cursor to make room for new byte.
-        for (unsigned long long i = end+1; i > cursor; i--) {
+        for (unsigned long long i = end+n; i > cursor+n-1; i--)
+        {
             moveCursor(i-n);
             byte current = getCurrentByte();
             moveCursor(i);

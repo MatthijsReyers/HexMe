@@ -55,8 +55,7 @@ app& app::run()
 	while (true)
 	{
 		// Get user input.
-		int input = getch();
-
+		int input =getch();
 		if (input == KEY_RESIZE)
 		{
 			// Update all window content.
@@ -72,12 +71,18 @@ app& app::run()
 		}
 
 		else if (input == 10 /*KEY_ENTER*/) {
-			auto cmd = cmdPromt->getText();
-			cmdparser cmdParser(file,this);
-			cmdParser.executeCmd(cmd);
-			hexView->onMoveCursor(0);
-			hexView->onRefresh();
-			cmdPromt->clearText();
+			try {
+				auto cmd = cmdPromt->getText();
+				cmdparser cmdParser(file,this);
+				cmdParser.executeCmd(cmd);
+				hexView->onRefresh();
+				cmdPromt->clearText();
+				cmdPromt->onRefresh();
+				cmdPromt->focus = false;
+			}
+			catch (const CmdSyntaxErrorException &error) {
+				// mvaddstr(0,0,"ERROR");
+			}
 		}
 
 		else if (cmdPromt->focus) {
@@ -85,33 +90,29 @@ app& app::run()
 			cmdPromt->onRefresh();
 		}
 
-		else switch (input)
-		{
-			case KEY_DOWN:
-				hexView->onMoveCursor(hexView->getColumnCount()*8);
-				hexView->onRefresh();
-				cmdPromt->onRefresh();
-				break;
-			case KEY_UP:
-				hexView->onMoveCursor(hexView->getColumnCount()*-8);
-				hexView->onRefresh();
-				cmdPromt->onRefresh();
-				break;
-			case KEY_LEFT:
-				hexView->onMoveCursor(-1);
-				hexView->onRefresh();
-				cmdPromt->onRefresh();
-				break;
-			case KEY_RIGHT:
-				hexView->onMoveCursor(1);
-				hexView->onRefresh();
-				cmdPromt->onRefresh();
-				break;
-			default:
-				cmdPromt->focus = true;
-				cmdPromt->onInput(input);
-				cmdPromt->onRefresh();
-				break;
+		else {
+			switch (input)
+			{
+				case KEY_UP: 
+					file.decCursor(hexView->getColumnCount()*8);
+					break;
+				case KEY_DOWN:
+					file.incCursor(hexView->getColumnCount()*8);
+					break;
+				case KEY_LEFT:
+					file.decCursor();
+					break;
+				case KEY_RIGHT:
+					file.incCursor();
+					break;
+				default:
+					cmdPromt->focus = true;
+					cmdPromt->onInput(input);
+					cmdPromt->onRefresh();
+					break;
+			}
+			hexView->onRefresh();
+			cmdPromt->onRefresh();
 		}
 	}
 

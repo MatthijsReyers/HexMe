@@ -2,6 +2,7 @@
 
 #include "./../app.h"
 #include "./../../utils/file/file.h"
+#include "./../../utils/stringtools/escape.h"
 #include "./../../exceptions/exceptions.h"
 
 #include <sstream>
