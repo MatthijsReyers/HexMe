@@ -58,55 +58,49 @@ void cmdparser::onExit(std::vector<std::string>* tokens)
 void cmdparser::onGoto(std::vector<std::string>* tokens)
 {
     // Something must be given after 'goto'.
-    if (tokens->size() < 2)
-        throw CmdSyntaxErrorException("Please give a location to goto.");
+    if (tokens->size() == 1)
+        throw CmdSyntaxErrorException("Please give a location to go to.");
 
-    // Get first argument of command.
-    auto type = (*tokens)[1];
-    
-    // File start and end shortcuts.
-    if (type == "start")
-        file.moveCursor(0);
-    else if (type == "end")
-        file.moveCursor(file.getFileEnd());
-
-    // Hex or decimal notation.
-    else if (type == "hex" || type == "dec")
+    else if (tokens->size() == 2)
     {
-        // Catch syntax errors.
-        if (tokens->size() < 3)
-            throw CmdSyntaxErrorException("Please give a number after hex/dec.");
-        else if (tokens->size() > 3)
-            throw CmdSyntaxErrorException("Please give only one number after hex/dec.");
+        // Get first argument of command.
+        auto type = (*tokens)[1];
+        
+        // File start and end shortcuts.
+        if (type == "start")
+            file.moveCursor(0);
+        else if (type == "end")
+            file.moveCursor(file.getFileEnd());
 
-        // Try to convert string to int.
-        try {
-            unsigned long long cursor;
-            if (type == "dec") cursor = std::stoi((*tokens)[2], nullptr, 10);
-            else /*type == hex*/ cursor = std::stoi((*tokens)[2], nullptr, 16);
-            
-            if (cursor > file.getFileEnd())
-                file.moveCursor(file.getFileEnd());
-            else file.moveCursor(cursor);
-        }
-        catch (std::invalid_argument const &e)
-        {
+        // Interpret first argument as hex number.
+        try {file.moveCursor(std::stoi(type, nullptr, 16));}
+        catch (std::invalid_argument const &e) {
             throw CmdSyntaxErrorException("Number was not in the correct format.");
         }
     }
 
-    // Try to determine notation if none is given.
-    else {
-        // Hex notation is concidered as default.
-        try {
-            unsigned long long cursor = std::stoi((*tokens)[2], nullptr, 16);
-            file.moveCursor(cursor);
-        }
-        catch (std::invalid_argument const &e)
-        {
-            throw CmdSyntaxErrorException("Please specify number format.");
-        }
+    // Hex or decimal notation.
+    else if (tokens->size() == 3)
+    {
+        auto format = (*tokens)[1];
+        auto num = (*tokens)[2];
+        
+        // Interpret second argument as hex number.
+        if (format == "hex")
+            try {file.moveCursor(std::stoi(num, nullptr, 16));}
+            catch (std::invalid_argument const &e) {
+                throw CmdSyntaxErrorException("Number was not in the specified format.");}
+        
+        // Interpret second argument as decimal number.
+        else if (format == "dec")
+            try {file.moveCursor(std::stoi(num, nullptr, 16));}
+            catch (std::invalid_argument const &e) {
+                throw CmdSyntaxErrorException("Number was not in the specified format.");}
+
+        else throw CmdSyntaxErrorException("Please give a number after hex/dec.");
     }
+
+    else throw CmdSyntaxErrorException("Please use the correct syntax.");
 }
 
 void cmdparser::onInsert(std::vector<std::string>* tokens)
@@ -115,7 +109,7 @@ void cmdparser::onInsert(std::vector<std::string>* tokens)
     if (tokens->size() < 2)
         throw CmdSyntaxErrorException("Please give bytes to insert.");
     if (tokens->size() > 3)
-        throw CmdSyntaxErrorException("Please use the proper syntax for the insert command.");
+        throw CmdSyntaxErrorException("Please use the correct syntax.");
     
     // Do some magic with the tokens.
     const char* toInsert = (*tokens)[1].c_str();
@@ -128,10 +122,11 @@ void cmdparser::onInsert(std::vector<std::string>* tokens)
 void cmdparser::onReplace(std::vector<std::string>* tokens)
 {
     // Something must be given after replace.
-    if (tokens->size() < 2)
+    if (tokens->size() == 1)
         throw CmdSyntaxErrorException("Please give bytes to replace the bytes at cursor with.");
 
-    else {
+    else if (tokens->size() == 2)
+    {
         // Do some magic with the tokens.
         const char* newBytes = (*tokens)[1].c_str();
         const int length = (*tokens)[1].length();
@@ -139,6 +134,8 @@ void cmdparser::onReplace(std::vector<std::string>* tokens)
         // Replace bytes at cursor.
         file.replaceBytes(newBytes, length);
     }
+
+    else throw CmdSyntaxErrorException("Please use the correct syntax.");
 }
 
 
