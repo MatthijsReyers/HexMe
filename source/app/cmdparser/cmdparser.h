@@ -23,6 +23,7 @@ private:
 
     void onExit(std::vector<std::string>* tokens);
     void onGoto(std::vector<std::string>* tokens);
+    void onFind(std::vector<std::string>* tokens);
     void onInsert(std::vector<std::string>* tokens);
     void onReplace(std::vector<std::string>* tokens);
     void onMove(std::vector<std::string>* tokens);
@@ -36,5 +37,5 @@ public:
 struct CmdSyntaxErrorException : public HexMeException
 {
     public:
-        CmdSyntaxErrorException(std::string msg) {this->message = msg;}
+        CmdSyntaxErrorException(std::string msg) : HexMeException(msg) {}
 };

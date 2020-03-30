@@ -21,14 +21,32 @@ namespace gui
 
     public:
         msgBoxOK(std::vector<std::string> text);
+        msgBoxOK(std::string text);
         ~msgBoxOK();
 
         msgBoxOK& onResize();
         msgBoxOK& onRefresh();
     };
 
-    msgBoxOK::msgBoxOK(std::vector<std::string> t): text(t)
+    msgBoxOK::msgBoxOK(const std::vector<std::string> t): text(t)
     {
+        height = text.size() + 3;
+        for (auto line : text)
+            if (width < int(line.size()) + 4)
+                width = line.size() + 4;
+
+        window = newwin(height, width, 0, 0);
+        onResize();
+
+        // Wait for user input.
+        getch();
+    }
+
+    msgBoxOK::msgBoxOK(const std::string t)
+    {
+        text = std::vector<std::string>();
+        text.push_back(t);
+
         height = text.size() + 3;
         for (auto line : text)
             if (width < int(line.size()) + 4)
@@ -43,7 +61,6 @@ namespace gui
 
     msgBoxOK::~msgBoxOK()
     {
-        mvaddstr(0,0,"I'm done");
         delwin(window);
     }
 
@@ -72,6 +89,9 @@ namespace gui
 		const static char* cornerBL = "╚";
 		const static char* cornerBR = "╝";
 
+        int x, y;
+        getyx(stdscr, y, x);
+
         for (int x = 1; x < width-1; x++) {
             mvwprintw(window, 0, x, horizontal);
             mvwprintw(window, height-1, x, horizontal);
@@ -91,10 +111,10 @@ namespace gui
             mvwprintw(window, 1+i, 2, text[i].c_str());
 
         wattron(window, COLOR_PAIR(9));
-        mvwprintw(window, height-2, (width/2) - 4, "[OK]");
+        mvwprintw(window, height-2, (width / 2)-2, "[OK]");
         wattroff(window, COLOR_PAIR(9));
 
-        move(0,0);
+        move(y,x);
 
         wrefresh(window);
         return *this;

@@ -4,6 +4,7 @@ cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
     this->commands["exit"] = &cmdparser::onExit;
     this->commands["goto"] = &cmdparser::onGoto;
+    this->commands["find"] = &cmdparser::onFind;
     this->commands["insert"] = &cmdparser::onInsert;
     this->commands["replace"] = &cmdparser::onReplace;
 }
@@ -73,7 +74,7 @@ void cmdparser::onGoto(std::vector<std::string>* tokens)
             file.moveCursor(file.getFileEnd());
 
         // Interpret first argument as hex number.
-        try {file.moveCursor(std::stoi(type, nullptr, 16));}
+        else try {file.moveCursor(std::stoi(type, nullptr, 16));}
         catch (std::invalid_argument const &e) {
             throw CmdSyntaxErrorException("Number was not in the correct format.");
         }
@@ -103,11 +104,41 @@ void cmdparser::onGoto(std::vector<std::string>* tokens)
     else throw CmdSyntaxErrorException("Please use the correct syntax.");
 }
 
+void cmdparser::onFind(std::vector<std::string>* tokens)
+{
+    if (tokens->size() == 1)
+        throw CmdSyntaxErrorException("Please give a string to find.");
+    if (tokens->size() > 3)
+        throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"string\"");
+    
+    // Find first occurence of string.
+    if ((*tokens)[1] == "first")
+    {
+
+    }
+
+    // Find last occurence of string.
+    else if ((*tokens)[1] == "last")
+    {
+
+    }
+
+    // Find next occurence of string.
+    else if ((*tokens)[1] == "next" || tokens->size() == 2)
+    {
+
+    }
+
+    // Wrong syntax.
+    else throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"string\"");
+
+    // throw CmdSyntaxErrorException("Could not find provided string");
+}
+
 void cmdparser::onInsert(std::vector<std::string>* tokens)
 {
-    // Something must be given after replace.
-    if (tokens->size() < 2)
-        throw CmdSyntaxErrorException("Please give bytes to insert.");
+    if (tokens->size() == 1)
+        throw CmdSyntaxErrorException("Please give a string to insert.");
     if (tokens->size() > 3)
         throw CmdSyntaxErrorException("Please use the correct syntax.");
     
@@ -138,7 +169,6 @@ void cmdparser::onReplace(std::vector<std::string>* tokens)
     else throw CmdSyntaxErrorException("Please use the correct syntax.");
 }
 
-
 void cmdparser::executeCmd(std::string& cmd)
 {
     // Spit command up into tokens.
@@ -153,6 +183,7 @@ void cmdparser::executeCmd(std::string& cmd)
         std::string name = (*tokens)[0];
         method command = commands[name];
         (this->*command)(tokens);
+        delete tokens;
     }
 
     // Comand does not exist.

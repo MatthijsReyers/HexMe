@@ -28,10 +28,17 @@ namespace gui
 		auto cursorRow = cursor / (columns*8);
 		auto lastRow = file.getFileEnd() / (columns*8);
 		auto bottomRow = topRow + rows - 1;
+
+		std::stringstream ss;
+		ss << "topRow:" << topRow << "  cursorRow:" << cursorRow << "  lastRow:" << lastRow << "  bottomRow:" << bottomRow << "       ";
+		mvaddstr(0,0,ss.str().c_str());
 		
 		// Check: there can never be an empty row unless the window is bigger than the file.
-		if (bottomRow > lastRow)
-			topRow = lastRow - rows + 1;
+		if (bottomRow > lastRow) {
+			if (bottomRow - lastRow > topRow)
+				topRow = 0;
+			else topRow -= bottomRow - lastRow;
+		}
 
 		// Check: is the top row below the cursor?
 		if (topRow > cursorRow)

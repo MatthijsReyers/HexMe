@@ -1,8 +1,12 @@
+.vscode
 
 # Folders
 # ======================
-.vscode
 obj
 obj/
 ./obj/
 ./obj/*
+bin
+bin/
+./bin/
+./bin/*

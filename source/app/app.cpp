@@ -53,13 +53,6 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 
 app& app::run()
 {
-	std::vector<std::string> messages;
-	messages.push_back("multi layer test message");
-	messages.push_back("test message");
-	auto newBox = gui::msgBoxOK(messages);
-	hexView->onRefresh();
-	cmdPromt->onRefresh();
-
 	while (true)
 	{
 		// Get user input.
@@ -89,7 +82,9 @@ app& app::run()
 				cmdPromt->focus = false;
 			}
 			catch (const CmdSyntaxErrorException &error) {
-				// mvaddstr(0,0,"ERROR");
+				gui::msgBoxOK(error.message);
+				hexView->onRefresh();
+				cmdPromt->onRefresh();
 			}
 		}
 

@@ -7,24 +7,24 @@
 struct HexMeException : public std::exception
 {
     public:
-        std::string message;
+        const std::string message = "";
         void printError() const {std::cout << "ERROR: " << message << std::endl;}
-        HexMeException() {this->message = "";}
-        HexMeException(const char* msg) {this->message = std::string(msg);}
-        HexMeException(std::string msg) {this->message = msg;}
+        HexMeException() {}
+        HexMeException(const char* msg) : message(std::string(msg)) {}
+        HexMeException(const std::string msg) : message(msg) {}
 };
 
 struct InvalidArgsException : public HexMeException
 {
     public:
-        InvalidArgsException(std::string msg) {this->message = msg;}
+        InvalidArgsException(const std::string msg) : HexMeException(msg) {}
 };
 
 struct FailedToOpenFileException : public HexMeException
 {
     public:
         std::string fileUrl;
-        FailedToOpenFileException(std::string msg, std::string file) {this->message = msg; this->fileUrl = file;}
+        FailedToOpenFileException(const std::string msg, const std::string file) : HexMeException(msg), fileUrl(file) {}
         void printError() const {std::cout << "ERROR: the file \"" << fileUrl << "\" could not be opened, " << message << std::endl;}
 };
 
