@@ -84,6 +84,7 @@ app& app::run()
 			catch (const CmdSyntaxErrorException &error) {
 				gui::msgBoxOK(error.message);
 				hexView->onRefresh();
+				cmdPromt->clearText();
 				cmdPromt->onRefresh();
 			}
 		}

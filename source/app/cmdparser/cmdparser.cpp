@@ -150,7 +150,7 @@ void cmdparser::onFind(std::vector<std::string>* tokens)
     {
         file.moveCursor(i);
         byte current = file.getCurrentByte();
-        if (current == query[0] && file.getBytesAfterCursor()+1 >= query.size())
+        if (current == query[0] && file.getBytesAfterCursor() >= query.size())
         {
             bool found = true;
             for (unsigned long long a = 0; a < query.size() && found; a++)
@@ -211,7 +211,7 @@ void cmdparser::executeCmd(std::string& cmd)
 {
     // Spit command up into tokens.
     auto tokens = lexer(cmd);
-    
+
     // A command is at least one token long.
     if (tokens->size() == 0)
         throw CmdSyntaxErrorException("Please enter a command to execute.");
