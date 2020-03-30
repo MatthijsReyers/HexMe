@@ -1,4 +1,6 @@
 #include "cmdparser.h"
+#include <unistd.h>
+
 
 cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
@@ -109,30 +111,66 @@ void cmdparser::onFind(std::vector<std::string>* tokens)
     if (tokens->size() == 1)
         throw CmdSyntaxErrorException("Please give a string to find.");
     if (tokens->size() > 3)
-        throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"string\"");
+        throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"query\"");
     
-    // Find first occurence of string.
-    if ((*tokens)[1] == "first")
-    {
+    std::string query;
+    unsigned long long start, stop;
+    auto cursor = file.getCursorLocation();
 
+    // Find first occurence of string.
+    if ((*tokens)[1] == "first" || tokens->size() == 2)
+    {
+        if (tokens->size() == 2) query = (*tokens)[1];
+        else query = (*tokens)[2];
+        start = 0;
+        stop = file.getFileEnd();
     }
 
     // Find last occurence of string.
     else if ((*tokens)[1] == "last")
     {
-
+        query = (*tokens)[2];
+        start = file.getFileEnd();
+        stop = 0;
     }
 
     // Find next occurence of string.
-    else if ((*tokens)[1] == "next" || tokens->size() == 2)
+    else if ((*tokens)[1] == "next")
     {
-
+        query = (*tokens)[2];
+        start = file.getCursorLocation() + 1;
+        stop = file.getFileEnd() + 1;
     }
 
     // Wrong syntax.
-    else throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"string\"");
+    else throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"query\"");
 
-    // throw CmdSyntaxErrorException("Could not find provided string");
+    // Search for query.
+    for (unsigned long long i = start; i != stop; (start < stop) ? i++ : i--)
+    {
+        file.moveCursor(i);
+        byte current = file.getCurrentByte();
+        if (current == query[0] && file.getBytesAfterCursor()+1 >= query.size())
+        {
+            bool found = true;
+            for (unsigned long long a = 0; a < query.size() && found; a++)
+            {
+                file.moveCursor(i + a);
+                if (query[a] != file.getCurrentByte())
+                    found = false;
+            }
+
+            // Move cursor to query location and find.
+            if (found) {
+                file.moveCursor(i);
+                return;
+            }
+        }
+    }
+    
+    // Could not find query.
+    file.moveCursor(cursor);
+    throw CmdSyntaxErrorException("Could not find provided query");
 }
 
 void cmdparser::onInsert(std::vector<std::string>* tokens)
