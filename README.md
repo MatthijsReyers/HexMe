@@ -9,7 +9,7 @@ HexMe is an open source hex editor licensed under the MIT License. Hexme has a f
 
 ## Commands
 | Syntax | Description |
-| :----: | :---------: |
+| :----- | :---------- |
 | `exit` | The exit command exits the HexMe application. |
 | `open "path/to/file"` | The open command can be used to a different file. |
 | `goto [hex/dec] [index]`<br>`goto [index]` | The goto command can be used to move the cursor to a specific byte by giving the index of the byte, either in hexadecimal or decimal format. (If no format is given HexMe will assume the index is given in hexadecimal format). |
