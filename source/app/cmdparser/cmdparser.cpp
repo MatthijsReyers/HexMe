@@ -1,6 +1,8 @@
 #include "cmdparser.h"
 #include <unistd.h>
-
+#include <fstream>
+#include <chrono>
+#include <ctime>
 
 cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
@@ -106,6 +108,13 @@ void cmdparser::onGoto(std::vector<std::string>* tokens)
     else throw CmdSyntaxErrorException("Please use the correct syntax.");
 }
 
+void logMesage(std::fstream &file, std::string msg)
+{
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    file << msg << ": " << std::ctime(&time);
+}
+
 void cmdparser::onFind(std::vector<std::string>* tokens)
 {
     if (tokens->size() == 1)
@@ -145,7 +154,7 @@ void cmdparser::onFind(std::vector<std::string>* tokens)
     // Wrong syntax.
     else throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"query\"");
 
-    // Search for query.
+    // Search for string.
     for (unsigned long long i = start; i != stop; (start < stop) ? i++ : i--)
     {
         file.moveCursor(i);

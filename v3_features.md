@@ -5,6 +5,7 @@
 - Create 'find' command
 - Fix display issue on Raspbian
 - Floating point exception when window becomes too small?
+- Create logging thing to find out why 100% usage.
 
 ====== EXIT ======
 exit
