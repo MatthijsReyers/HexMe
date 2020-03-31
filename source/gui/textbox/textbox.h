@@ -1,6 +1,8 @@
 #pragma once
 
+#include <sstream>
 #include <string>
+#include <vector>
 #include <ncurses.h>
 
 namespace gui
@@ -12,10 +14,12 @@ namespace gui
         const static int BACKSPACE = 127;
         const static int CRTL_BACKSPACE = 23;
         const static int DELETE = 330;
+        const static int MAX_HISTORY_SIZE = 45;
 
         WINDOW* window;
-        std::string text;
-        unsigned long int cursorPosition = 0;
+        std::vector<std::string> history;
+        unsigned long int historyPosition = 0;
+        unsigned long long cursorPosition = 0;
 
         void moveCursor(const int direction);
         void addChar(const char character);
