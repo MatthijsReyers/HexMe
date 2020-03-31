@@ -1,6 +1,4 @@
 #include "cmdparser.h"
-#include <unistd.h>
-#include "./../../logging.h"
 
 cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
@@ -15,8 +13,6 @@ std::vector<std::string> cmdparser::lexer(std::string cmd)
 {
     // Vector to output.
     auto res = std::vector<std::string>();
-
-    log_message("started lexer on cmd");
 
     // Remove trailing spaces behind cmd string.
     while (cmd.back() == ' ')
@@ -52,7 +48,6 @@ std::vector<std::string> cmdparser::lexer(std::string cmd)
             res.push_back(segment);
     }
 
-    log_message("lexer finished");
     return res;
 }
 
@@ -227,16 +222,13 @@ void cmdparser::executeCmd(std::string& cmd)
     // Check if given command exists.
     else if (commands.find(tokens[0]) != commands.end())
     {
-        log_message("command exist!");
         std::string name = tokens[0];
         method command = commands[name];
         (this->*command)(tokens);
-        log_message("returned from cmd!");
     }
 
     // Comand does not exist.
     else {
-        log_message("command does not exist");
         throw CmdSyntaxErrorException("That command does not exist.");
     }
 }
