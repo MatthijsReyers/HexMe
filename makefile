@@ -1,6 +1,11 @@
 
+# =============== TARGET: 64-BIT LINUX ===============
 CXX = g++
 CXXFLAGS = -xc++ -Wall -shared-libgcc -lncursesw
+
+# =============== TARGET: 32-BIT LINUX ===============
+# CXX = g++
+# CXXFLAGS = -xc++ -Wall -shared-libgcc -lncursesw -m32
 
 SOURCEFOLDER = ./source/
 OBJECTFOLDER = ./obj/
@@ -11,14 +16,8 @@ MAINFILE = main.cpp
 
 OBJECTS = $(shell find . -name "*.cpp" | grep "./source/" | grep -v "main.cpp" | xargs basename -a | cut -d "." -f 1 | sed 's,^,$(OBJECTFOLDER),' | sed 's/$$/.o/' | xargs)
 
-main: gui utils exceptions app cmdparser
+main: gui utils app cmdparser
 	$(CXX) $(OBJECTS) $(CXXFLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
-
-app:
-	$(CXX) $(CXXFLAGS) -c $(SOURCEFOLDER)app/app.cpp -o $(OBJECTFOLDER)app.o 
-
-cmdparser:
-	$(CXX) $(CXXFLAGS) -c $(SOURCEFOLDER)app/cmdparser/cmdparser.cpp -o $(OBJECTFOLDER)cmdparser.o 
 
 setup:
 	clear
@@ -35,8 +34,11 @@ run:
 
 # App spesific stuff.
 # =======================================================
-exceptions:
-	$(CXX) $(CXXFLAGS) -c $(SOURCEFOLDER)exceptions/exceptions.cpp -o $(OBJECTFOLDER)exceptions.o 
+app:
+	$(CXX) $(CXXFLAGS) -c $(SOURCEFOLDER)app/app.cpp -o $(OBJECTFOLDER)app.o 
+
+cmdparser:
+	$(CXX) $(CXXFLAGS) -c $(SOURCEFOLDER)app/cmdparser/cmdparser.cpp -o $(OBJECTFOLDER)cmdparser.o 
 
 # Utils namespace
 # =======================================================

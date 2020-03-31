@@ -1,7 +1,5 @@
 #pragma once
 
-#include "./../../exceptions/exceptions.h"
-
 #include <string>
 #include <fstream>
 
@@ -14,20 +12,21 @@ namespace utils
     private:
         std::fstream* fileStream;
         std::filebuf* fileBuffer;
-        std::string url = "";
+        std::string path = "";
         std::string header = "";
 
     public:
         file();
-        file(const char* url); 
-        file(const std::string& url);
+        file(const char* path); 
+        file(const std::string& path);
 
-        file& open(const char* url);
-        file& open(const std::string& url);
+        file& open(const char* path);
+        file& open(const std::string& path);
 
         file& close();
 
-        std::string getFileName();
+        std::string getPath();
+        std::string getName();
         std::string getHeader();
 
         unsigned long long getFileEnd();
@@ -50,5 +49,11 @@ namespace utils
         
         file& replaceByte(const byte in);
         file& replaceBytes(const byte* in, const int n);
+    };
+
+    struct UnableToOpenFileException : public std::exception
+    {
+        public:
+            UnableToOpenFileException() {}
     };
 }

@@ -30,7 +30,7 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 
 	// Draw file name and header.
 	std::stringstream ss;
-	ss << file.getFileName();
+	ss << file.getName();
 	if (file.getHeader() != "")
 		ss << " | " << file.getHeader();
 	mvaddstr(0,0,ss.str().c_str());

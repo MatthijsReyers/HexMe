@@ -12,29 +12,33 @@ namespace utils
         fileStream = new std::fstream();
     }
 
-    file::file(const char* url)
+    file::file(const char* path)
     {
         this->fileStream = new std::fstream();
-        this->open(std::string(url));
+        this->open(std::string(path));
     }
 
-    file::file(const std::string& url)
+    file::file(const std::string& path)
     {
         this->fileStream = new std::fstream();
-        this->open(url);
+        this->open(path);
     }
 
-    file& file::open(const char* url)
+    file& file::open(const char* path)
     {
-        return this->open(std::string(url));
+        return this->open(std::string(path));
     }
 
-    file& file::open(const std::string& url)
+    file& file::open(const std::string& path)
     {
-        this->url = url;
-        this->fileStream->open(url, std::ios::out | std::ios::binary | std::ios::in);
+        this->path = path;
+        this->fileStream->open(path, std::ios::out | std::ios::binary | std::ios::in);
         this->fileBuffer = fileStream->rdbuf();
         this->header = utils::getFileHeaderType(*this);
+
+        if (!fileStream->is_open())
+            throw UnableToOpenFileException();
+
         return *this;
     }
 
@@ -45,10 +49,15 @@ namespace utils
         return *this;
     }
 
-    std::string file::getFileName()
+    std::string file::getPath()
     {
-        std::size_t found = url.find_last_of("/\\");
-        return url.substr(0,found);
+        return this->path;
+    }
+
+    std::string file::getName()
+    {
+        std::size_t found = path.find_last_of("/\\");
+        return path.substr(0,found);
     }
 
     std::string file::getHeader()

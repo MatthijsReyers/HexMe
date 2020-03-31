@@ -1,10 +1,9 @@
 #pragma once
 
-#include "./../exceptions/exceptions.h"
+#include "./exceptions.h"
 
 #include "./../gui/textbox/textbox.h"
 #include "./../gui/viewer/viewer.h"
-// #include "./../gui/msgBox/msgBoxOK.h"
 
 #include "./../utils/argparser/argparser.h"
 #include "./../utils/file/file.h"

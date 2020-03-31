@@ -14,12 +14,6 @@ struct HexMeException : public std::exception
         HexMeException(const std::string msg) : message(msg) {}
 };
 
-struct InvalidArgsException : public HexMeException
-{
-    public:
-        InvalidArgsException(const std::string msg) : HexMeException(msg) {}
-};
-
 struct FailedToOpenFileException : public HexMeException
 {
     public:

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "./../../exceptions/exceptions.h"
-
 #include <string>
 #include <sstream>
 #include <stdexcept>
@@ -23,4 +21,14 @@ namespace utils
     };
 
     arguments parseArgs(int argc, const char *argv[]);
+
+    struct InvalidArgsException
+    {
+        public:
+            const std::string message = "";
+            
+            InvalidArgsException() {}
+            InvalidArgsException(const char* msg) : message(std::string(msg)) {}
+            InvalidArgsException(const std::string msg) : message(msg) {}
+    };
 }

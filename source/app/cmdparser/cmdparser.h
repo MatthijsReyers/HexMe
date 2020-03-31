@@ -1,9 +1,9 @@
 #pragma once
 
 #include "./../app.h"
+#include "./../exceptions.h"
 #include "./../../utils/file/file.h"
 #include "./../../utils/stringtools/escape.h"
-#include "./../../exceptions/exceptions.h"
 
 #include <sstream>
 #include <string>
@@ -22,6 +22,7 @@ private:
     std::vector<std::string> lexer(std::string cmd);
 
     void onExit(std::vector<std::string>& tokens);
+    void onOpen(std::vector<std::string>& tokens);
     void onGoto(std::vector<std::string>& tokens);
     void onFind(std::vector<std::string>& tokens);
     void onInsert(std::vector<std::string>& tokens);

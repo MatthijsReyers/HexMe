@@ -20,8 +20,8 @@ int main(const int argc, char const **argv)
 		file.close();
 	}
 
-	catch (const InvalidArgsException &error) {
-		error.printError();
+	catch (const utils::InvalidArgsException &error) {
+		std::cout << "ERROR: " << error.message << std::endl;
 	}
 	
 	catch (const HexMeException &error) {

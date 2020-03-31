@@ -3,6 +3,7 @@
 cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
     this->commands["exit"] = &cmdparser::onExit;
+    this->commands["open"] = &cmdparser::onOpen;
     this->commands["goto"] = &cmdparser::onGoto;
     this->commands["find"] = &cmdparser::onFind;
     this->commands["insert"] = &cmdparser::onInsert;
@@ -55,6 +56,28 @@ void cmdparser::onExit(std::vector<std::string>& tokens)
 {
     hexme->close();
     exit(0);
+}
+
+void cmdparser::onOpen(std::vector<std::string>& tokens)
+{
+    if (tokens.size() == 1)
+        throw CmdSyntaxErrorException("Please give a location to go to.");
+    if (tokens.size() > 2)
+        throw CmdSyntaxErrorException("Please use the correct syntax: open \"path/to/file.txt\"");
+    
+    auto newPath = tokens[1];
+    auto oldPath = file.getPath();
+    
+    try {
+        file.close();
+        file.open(newPath);
+    }
+
+    catch (utils::UnableToOpenFileException &error) {
+        file.close();
+        file.open(oldPath);
+        throw CmdSyntaxErrorException("Could not open file.");
+    }
 }
 
 void cmdparser::onGoto(std::vector<std::string>& tokens)
@@ -218,7 +241,8 @@ void cmdparser::executeCmd(std::string& cmd)
 
     // A command is at least one token long.
     if (tokens.size() == 0)
-        throw CmdSyntaxErrorException("Please enter a command to execute.");
+        return;
+        // throw CmdSyntaxErrorException("Please enter a command to execute.");
 
     // Check if given command exists.
     else if (commands.find(tokens[0]) != commands.end())
