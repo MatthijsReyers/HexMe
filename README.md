@@ -1,11 +1,24 @@
 # HexMe
-HexMe is an open source hex viewer licensed under the MIT License. It supports a curses based terminal interface that can be used to look at files on the individual bytes level. Currently HexMe is only available for 64-bit linux, but future releases for modern version of Windows are also planned.
+HexMe is an open source hex editor licensed under the MIT License. Hexme has a feature rich command line interface based on the nCurses library.
 
 ![Animated gif preview of HexMe running in terminal.](https://raw.githubusercontent.com/MatthijsReyers/HexMe/master/animation.gif)
 
 ## Features
 - HexMe will give different colors to different types of bytes. Allowing the user to easily identify null bytes, bytes that translate to valid ascii characters, etc.
 - HexMe can recognize a variety of file types by identifing the file header bytes, which it will give a unique color.
+
+## Commands
+| Syntax | Description |
+| :----: | :---------: |
+| `exit` | The exit command exits the HexMe application. |
+| `open "path/to/file"` | The open command can be used to a different file. |
+| `goto [hex/dec] [index]`<br>`goto [index]` | The goto command can be used to move the cursor to a specific byte by giving the index of the byte, either in hexadecimal or decimal format. (If no format is given HexMe will assume the index is given in hexadecimal format). |
+
+
+## Upcomming features
+Listed below is a list of features planned for the next version of HexMe:
+- Addition of a `delete` command allowing users to delete bytes.
+- Addition of a `previous` option to the `find` command effectively doing the same thing as the `next` option but backwards.
 
 ## Contributing
 If you'd like to help please check out the CONTRIBUTE.md file.
