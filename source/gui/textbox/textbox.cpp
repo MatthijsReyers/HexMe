@@ -18,9 +18,9 @@ namespace gui
 
     textbox& textbox::onRefresh()
     {
-        mvwprintw(window, 0, 0, "> ");
-        mvwprintw(window, 0, 2, text.c_str());
-        wmove(window, 0, 2+cursorPosition);
+        mvwprintw(window, 0, 0, " > ");
+        mvwprintw(window, 0, 3, text.c_str());
+        wmove(window, 0, 3+cursorPosition);
         wrefresh(window);
         return *this;
     }
