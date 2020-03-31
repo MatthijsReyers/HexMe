@@ -1,11 +1,11 @@
 
 # =============== TARGET: 64-BIT LINUX ===============
 CXX = g++
-CXXFLAGS = -xc++ -Wall -shared-libgcc -lncursesw
+# CXXFLAGS = -xc++ -Wall -shared-libgcc -lncursesw -O3
 
 # =============== TARGET: 32-BIT LINUX ===============
 # CXX = g++
-# CXXFLAGS = -xc++ -Wall -shared-libgcc -lncursesw -m32
+CXXFLAGS = -xc++ -Wall -shared-libgcc -lncursesw -O3 -m32
 
 SOURCEFOLDER = ./source/
 OBJECTFOLDER = ./obj/

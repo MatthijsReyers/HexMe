@@ -7,7 +7,7 @@ int main(const int argc, char const **argv)
 {
 	utils::arguments programArguments;
 	utils::file file;
-	app* application;
+	app* application = nullptr;
 
 	try {
 		programArguments = utils::parseArgs(argc, argv);
@@ -33,7 +33,10 @@ int main(const int argc, char const **argv)
 	
 	catch (const HexMeException &error) {
 		file.close();
-		application->close();
+		if (application != nullptr) {
+			application->close();
+			delete application;
+		}
 		std::cout << "ERROR: " << error.message << std::endl;
 	}
 }
