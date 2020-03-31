@@ -10,3 +10,12 @@ bin
 bin/
 ./bin/
 ./bin/*
+./bin/hexme
+./bin/hexme
+
+# Source code left over from complete overhaul.
+# ======================
+source_old
+source_old/
+./source_old/
+./source_old/*
