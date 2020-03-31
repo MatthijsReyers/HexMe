@@ -1,9 +1,11 @@
 
-- Utils: clean up string escaping function.
+- Utils: stringtools: raw bytes are not escaped properly.
 - Textbox: command history with up/down keys.
-- Fix display issue on Raspbian
-- GUI: Move commandline one char to the right.
-- Floating point exception when window becomes too small?
+- Utils: clean up class structure.
+- Fix display issue on Raspbian (and xterm?).
+
+<!-- - GUI: Move commandline one char to the right. -->
+<!-- - Floating point exception when window becomes too small? -->
 <!-- - Cmdparser: use smart pointer for storing tokens. -->
 <!-- - Create 'find' command -->
 <!-- - Create logging thing to find out why 100% usage. -->
