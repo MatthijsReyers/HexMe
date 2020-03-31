@@ -1,8 +1,6 @@
 #include "cmdparser.h"
 #include <unistd.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
+#include "./../../logging.h"
 
 cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
 {
@@ -13,10 +11,12 @@ cmdparser::cmdparser(utils::file& f, app* h): file(f), hexme(h)
     this->commands["replace"] = &cmdparser::onReplace;
 }
 
-std::vector<std::string>* cmdparser::lexer(std::string cmd)
+std::vector<std::string> cmdparser::lexer(std::string cmd)
 {
     // Vector to output.
-    auto res = new std::vector<std::string>();
+    auto res = std::vector<std::string>();
+
+    log_message("started lexer on cmd");
 
     // Remove trailing spaces behind cmd string.
     while (cmd.back() == ' ')
@@ -43,83 +43,88 @@ std::vector<std::string>* cmdparser::lexer(std::string cmd)
             segment = utils::stringtools::escape(segment);
 
             // Push to output and break while loop.
-            res->push_back(segment);
+            res.push_back(segment);
             break;
         }
 
         // Output vector may not include empty items.
         if (segment != "")
-            res->push_back(segment);
+            res.push_back(segment);
     }
+
+    log_message("lexer finished");
     return res;
 }
 
-void cmdparser::onExit(std::vector<std::string>* tokens)
+void cmdparser::onExit(std::vector<std::string>& tokens)
 {
     hexme->close();
     exit(0);
 }
 
-void cmdparser::onGoto(std::vector<std::string>* tokens)
+void cmdparser::onGoto(std::vector<std::string>& tokens)
 {
+    std::string index, format;
+    int base;
+
     // Something must be given after 'goto'.
-    if (tokens->size() == 1)
+    if (tokens.size() == 1)
         throw CmdSyntaxErrorException("Please give a location to go to.");
 
-    else if (tokens->size() == 2)
+    else if (tokens.size() == 2)
     {
         // Get first argument of command.
-        auto type = (*tokens)[1];
+        index = tokens[1];
         
         // File start and end shortcuts.
-        if (type == "start")
-            file.moveCursor(0);
-        else if (type == "end")
-            file.moveCursor(file.getFileEnd());
+        if (index == "start") {file.moveCursor(0);return;}
+        else if (index == "end") {file.moveCursor(file.getFileEnd());return;}
 
-        // Interpret first argument as hex number.
-        else try {file.moveCursor(std::stoi(type, nullptr, 16));}
-        catch (std::invalid_argument const &e) {
-            throw CmdSyntaxErrorException("Number was not in the correct format.");
-        }
+        else if (index == "hex" || index == "dec")
+            throw CmdSyntaxErrorException("Please give a number after hex/dec.");
     }
 
-    // Hex or decimal notation.
-    else if (tokens->size() == 3)
+    else if (tokens.size() == 3)
     {
-        auto format = (*tokens)[1];
-        auto num = (*tokens)[2];
+        format = tokens[1];
+        index = tokens[2];
         
-        // Interpret second argument as hex number.
+        // Hexadecimal and decimal formating.
         if (format == "hex")
-            try {file.moveCursor(std::stoi(num, nullptr, 16));}
-            catch (std::invalid_argument const &e) {
-                throw CmdSyntaxErrorException("Number was not in the specified format.");}
-        
-        // Interpret second argument as decimal number.
+            base = 16;
         else if (format == "dec")
-            try {file.moveCursor(std::stoi(num, nullptr, 16));}
-            catch (std::invalid_argument const &e) {
-                throw CmdSyntaxErrorException("Number was not in the specified format.");}
+            base = 10;
 
-        else throw CmdSyntaxErrorException("Please give a number after hex/dec.");
+        // Second arugment must be 'hex' or 'dec'.
+        else throw CmdSyntaxErrorException("Please use the correct syntax: goto [hex/dec] [number].");
     }
 
-    else throw CmdSyntaxErrorException("Please use the correct syntax.");
+    // Goto command never has more than 2 arguments.
+    else throw CmdSyntaxErrorException("Please use the correct syntax: goto [hex/dec] [number].");
+
+    try {
+        // Convert string to unsigned long long.
+        auto location = std::stoull(index, nullptr, base);
+
+        // Location must be inside file.
+        if (location > file.getFileEnd())
+            throw CmdSyntaxErrorException("Provided index is located outside of file.");
+
+        // Move cursor.
+        else file.moveCursor(location);
+    }
+
+    catch (std::invalid_argument const &e) {
+        throw CmdSyntaxErrorException("Number is not in the correct format.");}
+    catch (std::out_of_range const &e) {
+        throw CmdSyntaxErrorException("Provided number is too large.");}
 }
 
-void logMesage(std::fstream &file, std::string msg)
+void cmdparser::onFind(std::vector<std::string>& tokens)
 {
-    auto now = std::chrono::system_clock::now();
-    auto time = std::chrono::system_clock::to_time_t(now);
-    file << msg << ": " << std::ctime(&time);
-}
-
-void cmdparser::onFind(std::vector<std::string>* tokens)
-{
-    if (tokens->size() == 1)
+    if (tokens.size() == 1)
         throw CmdSyntaxErrorException("Please give a string to find.");
-    if (tokens->size() > 3)
+    if (tokens.size() > 3)
         throw CmdSyntaxErrorException("Please use the correct syntax: find [first/last/next] \"query\"");
     
     std::string query;
@@ -127,26 +132,26 @@ void cmdparser::onFind(std::vector<std::string>* tokens)
     auto cursor = file.getCursorLocation();
 
     // Find first occurence of string.
-    if ((*tokens)[1] == "first" || tokens->size() == 2)
+    if (tokens[1] == "first" || tokens.size() == 2)
     {
-        if (tokens->size() == 2) query = (*tokens)[1];
-        else query = (*tokens)[2];
+        if (tokens.size() == 2) query = tokens[1];
+        else query = tokens[2];
         start = 0;
         stop = file.getFileEnd();
     }
 
     // Find last occurence of string.
-    else if ((*tokens)[1] == "last")
+    else if (tokens[1] == "last")
     {
-        query = (*tokens)[2];
+        query = tokens[2];
         start = file.getFileEnd();
         stop = 0;
     }
 
     // Find next occurence of string.
-    else if ((*tokens)[1] == "next")
+    else if (tokens[1] == "next")
     {
-        query = (*tokens)[2];
+        query = tokens[2];
         start = file.getCursorLocation() + 1;
         stop = file.getFileEnd() + 1;
     }
@@ -179,41 +184,35 @@ void cmdparser::onFind(std::vector<std::string>* tokens)
     
     // Could not find query.
     file.moveCursor(cursor);
-    throw CmdSyntaxErrorException("Could not find provided query");
+    throw CmdSyntaxErrorException("Could not find provided query.");
 }
 
-void cmdparser::onInsert(std::vector<std::string>* tokens)
+void cmdparser::onInsert(std::vector<std::string>& tokens)
 {
-    if (tokens->size() == 1)
+    if (tokens.size() == 1)
         throw CmdSyntaxErrorException("Please give a string to insert.");
-    if (tokens->size() > 3)
-        throw CmdSyntaxErrorException("Please use the correct syntax.");
+    if (tokens.size() > 2)
+        throw CmdSyntaxErrorException("Please use the correct syntax: insert \"string\".");
     
-    // Do some magic with the tokens.
-    const char* toInsert = (*tokens)[1].c_str();
-    const int length = (*tokens)[1].length();
+    const char* toInsert = tokens[1].c_str();
+    const int length = tokens[1].length();
 
     // Replace bytes at cursor.
     file.insertBytes(toInsert, length);
 }
 
-void cmdparser::onReplace(std::vector<std::string>* tokens)
+void cmdparser::onReplace(std::vector<std::string>& tokens)
 {
-    // Something must be given after replace.
-    if (tokens->size() == 1)
+    if (tokens.size() == 1)
         throw CmdSyntaxErrorException("Please give bytes to replace the bytes at cursor with.");
+    if (tokens.size() > 2)
+        throw CmdSyntaxErrorException("Please use the correct syntax: replace \"string\".");
 
-    else if (tokens->size() == 2)
-    {
-        // Do some magic with the tokens.
-        const char* newBytes = (*tokens)[1].c_str();
-        const int length = (*tokens)[1].length();
+    const char* newBytes = tokens[1].c_str();
+    const int length = tokens[1].length();
 
-        // Replace bytes at cursor.
-        file.replaceBytes(newBytes, length);
-    }
-
-    else throw CmdSyntaxErrorException("Please use the correct syntax.");
+    // Replace bytes at cursor.
+    file.replaceBytes(newBytes, length);
 }
 
 void cmdparser::executeCmd(std::string& cmd)
@@ -222,17 +221,22 @@ void cmdparser::executeCmd(std::string& cmd)
     auto tokens = lexer(cmd);
 
     // A command is at least one token long.
-    if (tokens->size() == 0)
+    if (tokens.size() == 0)
         throw CmdSyntaxErrorException("Please enter a command to execute.");
 
     // Check if given command exists.
-    else if (commands.find((*tokens)[0]) != commands.end()) {
-        std::string name = (*tokens)[0];
+    else if (commands.find(tokens[0]) != commands.end())
+    {
+        log_message("command exist!");
+        std::string name = tokens[0];
         method command = commands[name];
         (this->*command)(tokens);
-        delete tokens;
+        log_message("returned from cmd!");
     }
 
     // Comand does not exist.
-    else throw CmdSyntaxErrorException("That command does not exist.");
+    else {
+        log_message("command does not exist");
+        throw CmdSyntaxErrorException("That command does not exist.");
+    }
 }

@@ -1,0 +1,21 @@
+[Tue Mar 31 13:57:15 2020] started lexer on cmd
+[Tue Mar 31 13:57:15 2020] lexer finished
+[Tue Mar 31 13:57:15 2020] command exist!
+[Tue Mar 31 13:57:15 2020] started building msgbox
+[Tue Mar 31 13:57:15 2020] waiting for user input.
+[Tue Mar 31 13:57:16 2020] got user input!
+[Tue Mar 31 13:57:16 2020] started destroying msgbox
+[Tue Mar 31 13:57:20 2020] started lexer on cmd
+[Tue Mar 31 13:57:20 2020] lexer finished
+[Tue Mar 31 13:57:20 2020] command exist!
+[Tue Mar 31 13:57:20 2020] started building msgbox
+[Tue Mar 31 13:57:20 2020] waiting for user input.
+[Tue Mar 31 13:57:25 2020] got user input!
+[Tue Mar 31 13:57:25 2020] started destroying msgbox
+[Tue Mar 31 13:57:36 2020] started lexer on cmd
+[Tue Mar 31 13:57:36 2020] lexer finished
+[Tue Mar 31 13:57:36 2020] command exist!
+[Tue Mar 31 13:57:36 2020] started building msgbox
+[Tue Mar 31 13:57:36 2020] waiting for user input.
+[Tue Mar 31 13:57:37 2020] got user input!
+[Tue Mar 31 13:57:37 2020] started destroying msgbox

@@ -1,6 +1,6 @@
 
 COMPILER = gcc
-FLAGS = -xc++ -Wall -lstdc++ -shared-libgcc -lncursesw
+FLAGS = -xc++ -Wall -lstdc++ -shared-libgcc -lncursesw -std=c++17
 
 SOURCEFOLDER = ./source/
 OBJECTFOLDER = ./obj/
@@ -9,13 +9,16 @@ OUTPUTFOLDER = ./bin/
 OUTPUTEXEC = hexme
 MAINFILE = main.cpp
 
-OBJECTS = $(OBJECTFOLDER)argparser.o $(OBJECTFOLDER)cmdparser.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)escape.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
+OBJECTS = $(OBJECTFOLDER)logging.o $(OBJECTFOLDER)argparser.o $(OBJECTFOLDER)cmdparser.o $(OBJECTFOLDER)exceptions.o $(OBJECTFOLDER)file.o $(OBJECTFOLDER)hdetect.o $(OBJECTFOLDER)converters.o $(OBJECTFOLDER)escape.o $(OBJECTFOLDER)textbox.o $(OBJECTFOLDER)viewer.o $(OBJECTFOLDER)app.o
 
-main: exceptions argparser cmdparser file hdetect converters stringtools textbox viewer app
+main: exceptions logging argparser cmdparser file hdetect converters stringtools textbox viewer app
 	$(COMPILER) $(OBJECTS) $(FLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
 
 app:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)app/app.cpp -o $(OBJECTFOLDER)app.o 
+
+logging:
+	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)logging.cpp -o $(OBJECTFOLDER)logging.o 
 
 cmdparser:
 	$(COMPILER) $(FLAGS) -c $(SOURCEFOLDER)app/cmdparser/cmdparser.cpp -o $(OBJECTFOLDER)cmdparser.o 

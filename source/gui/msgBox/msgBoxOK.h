@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ncurses.h>
+#include "./../../logging.h"
 
 #include <ncurses.h>
 #include <vector>
@@ -30,6 +30,7 @@ namespace gui
 
     msgBoxOK::msgBoxOK(const std::vector<std::string> t): text(t)
     {
+        log_message("started building msgbox");
         height = text.size() + 3;
         for (auto line : text)
             if (width < int(line.size()) + 4)
@@ -39,28 +40,32 @@ namespace gui
         onResize();
 
         // Wait for user input.
+        log_message("waiting for user input.");
         getch();
+        log_message("got user input!");
     }
 
     msgBoxOK::msgBoxOK(const std::string t)
     {
+        log_message("started building msgbox");
         text = std::vector<std::string>();
         text.push_back(t);
 
-        height = text.size() + 3;
-        for (auto line : text)
-            if (width < int(line.size()) + 4)
-                width = line.size() + 4;
+        height = 4;
+        width = t.length() + 4;
 
         window = newwin(height, width, 0, 0);
         onResize();
 
         // Wait for user input.
+        log_message("waiting for user input.");
         getch();
+        log_message("got user input!");
     }
 
     msgBoxOK::~msgBoxOK()
     {
+        log_message("started destroying msgbox");
         delwin(window);
     }
 

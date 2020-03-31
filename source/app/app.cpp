@@ -1,6 +1,7 @@
 #include "app.h"
 #include "./cmdparser/cmdparser.h"
 #include "./../gui/msgBox/msgBoxOK.h"
+#include "./../logging.h"
 
 app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 {
@@ -53,6 +54,8 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 
 app& app::run()
 {
+	logfile = std::fstream();
+	init_log();
 	while (true)
 	{
 		// Get user input.
@@ -82,7 +85,7 @@ app& app::run()
 				cmdPromt->focus = false;
 			}
 			catch (const CmdSyntaxErrorException &error) {
-				gui::msgBoxOK(error.message);
+				auto fix = gui::msgBoxOK(error.message);
 				hexView->onRefresh();
 				cmdPromt->clearText();
 				cmdPromt->onRefresh();
@@ -119,6 +122,8 @@ app& app::run()
 			cmdPromt->onRefresh();
 		}
 	}
+
+	close_log();
 
 	// Return reference to self.
 	return *this;
