@@ -70,6 +70,7 @@ void cmdparser::onGoto(std::vector<std::string>& tokens)
     {
         // Get first argument of command.
         index = tokens[1];
+        base = 16;
         
         // File start and end shortcuts.
         if (index == "start") {file.moveCursor(0);return;}
