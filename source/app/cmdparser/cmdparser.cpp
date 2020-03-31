@@ -73,7 +73,7 @@ void cmdparser::onOpen(std::vector<std::string>& tokens)
         file.open(newPath);
     }
 
-    catch (utils::UnableToOpenFileException &error) {
+    catch (utils::FailedToOpenFileException &error) {
         file.close();
         file.open(oldPath);
         throw CmdSyntaxErrorException("Could not open file.");

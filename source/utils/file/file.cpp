@@ -37,7 +37,7 @@ namespace utils
         this->header = utils::getFileHeaderType(*this);
 
         if (!fileStream->is_open())
-            throw UnableToOpenFileException();
+            throw FailedToOpenFileException("Could not open file", path);
 
         return *this;
     }

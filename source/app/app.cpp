@@ -1,4 +1,5 @@
 #include "app.h"
+
 #include "./cmdparser/cmdparser.h"
 #include "./../gui/msgBox/msgBoxOK.h"
 
@@ -59,6 +60,9 @@ app& app::run()
 		int input =getch();
 		if (input == KEY_RESIZE)
 		{
+			if (getmaxx(stdscr) < 59)
+				throw WindowTooSmallException();
+
 			// Update all window content.
 			hexView->onResize();
 			cmdPromt->onResize();
@@ -112,7 +116,6 @@ app& app::run()
 				default:
 					cmdPromt->focus = true;
 					cmdPromt->onInput(input);
-					cmdPromt->onRefresh();
 					break;
 			}
 			hexView->onRefresh();

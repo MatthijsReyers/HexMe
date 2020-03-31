@@ -51,9 +51,10 @@ namespace utils
         file& replaceBytes(const byte* in, const int n);
     };
 
-    struct UnableToOpenFileException : public std::exception
+    struct FailedToOpenFileException
     {
         public:
-            UnableToOpenFileException() {}
+            std::string message, path;
+            FailedToOpenFileException(const std::string msg, const std::string file) : message(msg), path(file) {}
     };
 }
