@@ -4,5 +4,5 @@ if [[ $EUID -eq 0 ]]; then
     sudo cp hexme /usr/bin
     echo "Finished installing..."
 else
-    echo "Please run as root"
+    echo "Please run the installer as root."
 fi
