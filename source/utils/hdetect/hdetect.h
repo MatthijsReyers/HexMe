@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 
+#define byte char
+
 namespace utils
 {
     std::string getFileHeaderType(utils::file& f);
