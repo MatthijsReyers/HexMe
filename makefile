@@ -32,6 +32,10 @@ cleanup:
 run:
 	./bin/hexme README.md
 
+install:
+	sudo rm /usr/bin/hexme
+	sudo cp ./bin/hexme /usr/bin/hexme
+
 # App spesific stuff.
 # =======================================================
 app:
