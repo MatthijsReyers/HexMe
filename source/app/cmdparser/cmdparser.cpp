@@ -167,6 +167,14 @@ void cmdparser::onFind(std::vector<std::string>& tokens)
         stop = 0;
     }
 
+    // Find previous occurence of string.
+    else if (tokens[1] == "previous")
+    {
+        query = tokens[2];
+        start = file.getCursorLocation();
+        stop = 0;
+    }
+
     // Find next occurence of string.
     else if (tokens[1] == "next")
     {
