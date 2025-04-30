@@ -16,13 +16,13 @@ MAINFILE = main.cpp
 
 OBJECTS = $(shell find . -name "*.cpp" | grep "./source/" | grep -v "main.cpp" | xargs basename -a | cut -d "." -f 1 | sed 's,^,$(OBJECTFOLDER),' | sed 's/$$/.o/' | xargs)
 
-main: gui utils app cmdparser
+main: setup gui utils app cmdparser
 	$(CXX) $(OBJECTS) $(CXXFLAGS) -o $(OUTPUTFOLDER)$(OUTPUTEXEC) $(SOURCEFOLDER)$(MAINFILE)
 
 setup:
 	clear
-	mkdir $(OBJECTFOLDER)
-	mkdir $(OUTPUTFOLDER)
+	mkdir -p $(OBJECTFOLDER)
+	mkdir -p $(OUTPUTFOLDER)
 
 cleanup:
 	clear
@@ -32,11 +32,11 @@ cleanup:
 run:
 	./bin/hexme README.md
 
-install:
-	sudo rm /usr/bin/hexme
+install: setup app main 
+	sudo rm -f /usr/bin/hexme
 	sudo cp ./bin/hexme /usr/bin/hexme
 
-# App spesific stuff.
+# App specific stuff.
 # =======================================================
 app:
 	$(CXX) $(CXXFLAGS) -c $(SOURCEFOLDER)app/app.cpp -o $(OBJECTFOLDER)app.o 
