@@ -6,7 +6,7 @@ namespace utils
     {
         std::stringstream ss;
         int converted = (int)((unsigned char)b);
-        if (converted < 0x0f) ss << "0";
+        if (converted <= 0x0f) ss << "0";
         ss << std::hex << converted;
         return ss.str();
     }
