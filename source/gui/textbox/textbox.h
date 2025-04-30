@@ -12,8 +12,11 @@ namespace gui
     private:
         const static int ESCAPE = 27;
         const static int BACKSPACE = 127;
-        const static int CRTL_BACKSPACE = 23;
+        const static int CTRL_BACKSPACE = 23;
+        const static int CTRL_LEFT = 554;
+        const static int CTRL_RIGHT = 569;
         const static int DELETE = 330;
+
         const static int MAX_HISTORY_SIZE = 45;
 
         WINDOW* window;
@@ -25,6 +28,8 @@ namespace gui
         void addChar(const char character);
 
     public:
+        const static int CTRL_DELETE = 1024;
+
         textbox();
         ~textbox();
 

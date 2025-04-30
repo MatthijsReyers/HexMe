@@ -26,13 +26,12 @@ namespace gui
 		return *this;
 	}
 
-	textbox& textbox::onInput(int key)
+	textbox& textbox::onInput(const int key)
 	{
 		if (key >= 32 && key <= 126) {
 			history[0].insert(cursorPosition,{char(key)});
 			cursorPosition++;
 		}
-
 		else switch (key)
 		{
 			case ESCAPE:
@@ -55,6 +54,7 @@ namespace gui
 					this->onRefresh();
 				} break;
 
+			case KEY_BACKSPACE:
 			case BACKSPACE:
 				if (history[historyPosition].length() > 0 && cursorPosition > 0) {
 					history[historyPosition].erase(cursorPosition-1, 1);
@@ -64,7 +64,7 @@ namespace gui
 				wclear(window);
 				break;
 
-			case CRTL_BACKSPACE:
+			case CTRL_BACKSPACE:
 				while (history[historyPosition].length() > 0 && cursorPosition > 0 && history[historyPosition][cursorPosition-1] != ' ') {
 					history[historyPosition].erase(cursorPosition-1, 1);
 					if (cursorPosition > 0)
@@ -84,6 +84,16 @@ namespace gui
 				wclear(window);
 				break;
 
+			case CTRL_DELETE:
+				while (history[historyPosition][cursorPosition] == ' ' && history[historyPosition].length() > cursorPosition) {
+					history[historyPosition].erase(cursorPosition, 1);
+				}
+				while (history[historyPosition][cursorPosition] != ' ' && history[historyPosition].length() > cursorPosition) {
+					history[historyPosition].erase(cursorPosition, 1);
+				} 
+				wclear(window);
+				break;
+
 			case KEY_HOME:
 				cursorPosition = 0;
 				break;
@@ -100,6 +110,24 @@ namespace gui
 			case KEY_RIGHT:
 				if (cursorPosition < history[historyPosition].size())
 					cursorPosition++;
+				break;
+
+			case CTRL_LEFT:
+				while (history[historyPosition].length() > 0 && cursorPosition > 0 && history[historyPosition][cursorPosition-1] == ' ') {
+					cursorPosition--;
+				} 
+				while (history[historyPosition].length() > 0 && cursorPosition > 0 && history[historyPosition][cursorPosition-1] != ' ') {
+					cursorPosition--;
+				}
+				break;
+
+			case CTRL_RIGHT:
+				while (history[historyPosition].length() > cursorPosition && history[historyPosition][cursorPosition] == ' ') {
+					cursorPosition++;
+				} 
+				while (history[historyPosition].length() > cursorPosition && history[historyPosition][cursorPosition] != ' ') {
+					cursorPosition++;
+				}
 				break;
 		}
 		return *this;

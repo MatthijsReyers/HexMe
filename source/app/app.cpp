@@ -1,5 +1,4 @@
 #include "app.h"
-
 #include "./cmdparser/cmdparser.h"
 #include "./../gui/msgBox/msgBoxOK.h"
 
@@ -9,6 +8,7 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 	setlocale(LC_ALL, "");
 	initscr();
 	keypad(stdscr, true);
+	nonl();
 	noecho();
 
 	// Setup nCurses colors.
@@ -52,75 +52,102 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 	cmdPromt->onRefresh();
 }
 
+app& app::onResizeTerminal() {
+	if (getmaxx(stdscr) < 59)
+		throw WindowTooSmallException();
+
+	// Update all window content.
+	hexView->onResize();
+	cmdPromt->onResize();
+
+	// Needed for some reason?
+	refresh();
+
+	// Refresh all windows.
+	hexView->onRefresh();
+	cmdPromt->onRefresh();
+	
+	return *this;
+}
+
+app& app::onHandleInput(const int key_code) {
+	if (key_code == KEY_RESIZE) {
+		this->onResizeTerminal();
+		return *this;
+	}
+
+	if (key_code == 13 /* KEY_ENTER */) {
+		try {
+			auto cmd = cmdPromt->getText();
+			cmdparser cmdParser(file,this);
+			cmdParser.executeCmd(cmd);
+			hexView->onRefresh();
+			cmdPromt->clearText();
+			cmdPromt->onRefresh();
+			cmdPromt->focus = false;
+		}
+		catch (const CmdSyntaxErrorException &error) {
+			auto fix = gui::msgBoxOK(error.message);
+			hexView->onRefresh();
+			cmdPromt->clearText();
+			cmdPromt->onRefresh();
+		}
+	}
+
+	else if (cmdPromt->focus) {
+		cmdPromt->onInput(key_code);
+		cmdPromt->onRefresh();
+	}
+
+	else {
+		switch (key_code)
+		{
+			case KEY_UP: 
+				file.decCursor(hexView->getColumnCount()*8);
+				break;
+			case KEY_DOWN:
+				file.incCursor(hexView->getColumnCount()*8);
+				break;
+			case KEY_LEFT:
+				file.decCursor();
+				break;
+			case KEY_RIGHT:
+				file.incCursor();
+				break;
+			default:
+				cmdPromt->focus = true;
+				cmdPromt->onInput(key_code);
+				break;
+		}
+		hexView->onRefresh();
+		cmdPromt->onRefresh();
+	}
+
+	return *this;
+}
+
 app& app::run()
 {
+	int saw_escape = false;
 	while (true)
 	{
-		// Get user input.
-		int input =getch();
-		if (input == KEY_RESIZE)
-		{
-			if (getmaxx(stdscr) < 59)
-				throw WindowTooSmallException();
+		int key_code = getch();
 
-			// Update all window content.
-			hexView->onResize();
-			cmdPromt->onResize();
-
-			// Needed for some reason?
-			refresh();
-
-			// Refresh all windows.
-			hexView->onRefresh();
-			cmdPromt->onRefresh();
+		if (!saw_escape && key_code == 27 /* KEY_ESC */ ){
+			saw_escape = true;
 		}
 
-		else if (input == 10 /*KEY_ENTER*/) {
-			try {
-				auto cmd = cmdPromt->getText();
-				cmdparser cmdParser(file,this);
-				cmdParser.executeCmd(cmd);
-				hexView->onRefresh();
-				cmdPromt->clearText();
-				cmdPromt->onRefresh();
-				cmdPromt->focus = false;
-			}
-			catch (const CmdSyntaxErrorException &error) {
-				auto fix = gui::msgBoxOK(error.message);
-				hexView->onRefresh();
-				cmdPromt->clearText();
-				cmdPromt->onRefresh();
+		if (saw_escape) {
+			if (key_code == 100) {
+				key_code = gui::textbox::CTRL_DELETE;
 			}
 		}
 
-		else if (cmdPromt->focus) {
-			cmdPromt->onInput(input);
-			cmdPromt->onRefresh();
-		}
+		if (saw_escape && key_code != 27 /* KEY_ESC */ ){
+			saw_escape = false;
+		} 
 
-		else {
-			switch (input)
-			{
-				case KEY_UP: 
-					file.decCursor(hexView->getColumnCount()*8);
-					break;
-				case KEY_DOWN:
-					file.incCursor(hexView->getColumnCount()*8);
-					break;
-				case KEY_LEFT:
-					file.decCursor();
-					break;
-				case KEY_RIGHT:
-					file.incCursor();
-					break;
-				default:
-					cmdPromt->focus = true;
-					cmdPromt->onInput(input);
-					break;
-			}
-			hexView->onRefresh();
-			cmdPromt->onRefresh();
-		}
+		this->onHandleInput(key_code);
 	}
 
 	// Return reference to self.

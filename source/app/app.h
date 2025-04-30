@@ -26,11 +26,16 @@ class app
 		utils::file& file;
 		utils::arguments& args;
 
+
 	public:
 		app(utils::file& File, utils::arguments& Args);
 
 		app& close();
 		app& run();
+		
 		app& onMoveCursor(int n);
+		app& onResizeTerminal();
+		app& onHandleInput(const int key_code);
+
 		app& executeCmd(const std::string& cmd);
 };
