@@ -1,5 +1,5 @@
 #include "app.h"
-#include "./cmdparser/cmdparser.h"
+#include "./../command-handler/command-handler.hpp"
 #include "./../gui/msgBox/msgBoxOK.h"
 
 app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
@@ -79,7 +79,7 @@ app& app::onHandleInput(const int key_code) {
 	if (key_code == 13 /* KEY_ENTER */) {
 		try {
 			auto cmd = cmdPromt->getText();
-			cmdparser cmdParser(file,this);
+			CommandHandler cmdParser(file,this);
 			cmdParser.executeCmd(cmd);
 			hexView->onRefresh();
 			cmdPromt->clearText();

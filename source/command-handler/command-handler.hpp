@@ -1,23 +1,27 @@
 #pragma once
 
-#include "./../app.h"
-#include "./../exceptions.h"
-#include "./../../utils/file/file.h"
-#include "./../../utils/stringtools/escape.h"
+#include "./../app/app.h"
+#include "./../app/exceptions.h"
+#include "./../utils/file/file.h"
+#include "./../utils/stringtools/escape.h"
 
 #include <sstream>
 #include <string>
 #include <map>
 #include <vector>
 
-class cmdparser
+/**
+ * This class is responsible for parsing and executing the commands entered by the user in the 
+ * command text-box.
+ */
+class CommandHandler
 {
 private:
-    typedef void (cmdparser::*method)(std::vector<std::string>& tokens);
+    typedef void (CommandHandler::*cmdHandler)(std::vector<std::string>& tokens);
 
     utils::file& file;
     app* hexme;
-    std::map<std::string,method> commands;
+    std::map<std::string, cmdHandler> commands;
 
     std::vector<std::string> lexer(std::string cmd);
 
@@ -30,7 +34,7 @@ private:
     void onMove(std::vector<std::string>& tokens);
 
 public:
-    cmdparser(utils::file& file, app* hexme);
+    CommandHandler(utils::file& file, app* hexme);
 
     void executeCmd(std::string& cmd);
 };
