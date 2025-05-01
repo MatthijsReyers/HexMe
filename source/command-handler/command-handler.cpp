@@ -100,9 +100,9 @@ void CommandHandler::onHelp(std::vector<std::string>& tokens)
 {
     std::vector<std::string> msg = {
         "exit                         - Closes application",
-        "open [file]                  - Opens the given file",
-        "goto [index]                 - Set cursor pos to index",
-        "move [distance]              - Moves cursor relative",
+        "open [url]                   - Opens the given file",
+        "goto (start/end/[int])       - Set cursor pos to index",
+        "move [int]                   - Moves cursor relative",
         "find (first/next/last) [str] - Search for bytes",
         "insert [str]                 - Insert bytes at cursor",
         "replace [str]                - Overwrite bytes at cursor",
@@ -135,48 +135,23 @@ void CommandHandler::onOpen(std::vector<std::string>& tokens)
 
 void CommandHandler::onGoto(std::vector<std::string>& tokens)
 {
-    std::string index, format;
-    int base;
-
-    // Something must be given after 'goto'.
     if (tokens.size() == 1)
-        throw CmdSyntaxErrorException("Please give a location to go to.");
+        throw CmdSyntaxErrorException("Please give an index to go to: goto (start|end|[int])");
+    else if (tokens.size() > 2) 
+        throw CmdSyntaxErrorException("Please use the correct syntax: goto (start|end|[int])");
 
-    else if (tokens.size() == 2)
-    {
-        // Get first argument of command.
-        index = tokens[1];
-        base = 16;
-        
-        // File start and end shortcuts.
-        if (index == "start") {file.moveCursor(0);return;}
-        else if (index == "end") {file.moveCursor(file.getFileEnd());return;}
-
-        else if (index == "hex" || index == "dec")
-            throw CmdSyntaxErrorException("Please give a number after hex/dec.");
+    if (tokens[1] == "start") {
+        file.moveCursor(0);
+        return;
     }
-
-    else if (tokens.size() == 3)
-    {
-        format = tokens[1];
-        index = tokens[2];
-        
-        // Hexadecimal and decimal formating.
-        if (format == "hex")
-            base = 16;
-        else if (format == "dec")
-            base = 10;
-
-        // Second argument must be 'hex' or 'dec'.
-        else throw CmdSyntaxErrorException("Please use the correct syntax: goto [hex/dec] [number].");
+    if (tokens[1] == "end") {
+        file.moveCursor(file.getFileEnd());
+        return;
     }
-
-    // Goto command never has more than 2 arguments.
-    else throw CmdSyntaxErrorException("Please use the correct syntax: goto [hex/dec] [number].");
 
     try {
         // Convert string to unsigned long long.
-        auto location = std::stoull(index, nullptr, base);
+        auto location = this->parseInt(tokens[1]);
 
         // Location must be inside file.
         if (location > file.getFileEnd())
@@ -197,12 +172,16 @@ void CommandHandler::onMove(std::vector<std::string>& tokens)
     if (tokens.size() != 2)
         throw CmdSyntaxErrorException("Please use the correct syntax: move [number].");
 
-    int64_t direction = parseInt(tokens[1]);
-    int64_t current = this->file.getCursorLocation();
-    int64_t end = this->file.getFileEnd();
-    int64_t position = std::clamp(current + direction, int64_t{0}, end);
+    try {
+        int64_t direction = parseInt(tokens[1]);
+        int64_t current = this->file.getCursorLocation();
+        int64_t end = this->file.getFileEnd();
+        int64_t position = std::clamp(current + direction, int64_t{0}, end);
 
-    this->file.moveCursor(position);
+        this->file.moveCursor(position);
+    }
+    catch (std::out_of_range const &e) {
+        throw CmdSyntaxErrorException("Provided number is too large.");}
 }
 
 void CommandHandler::onFind(std::vector<std::string>& tokens)
