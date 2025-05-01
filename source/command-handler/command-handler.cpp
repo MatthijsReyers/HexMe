@@ -1,8 +1,14 @@
 #include "command-handler.hpp"
-#include <regex>
 
-CommandHandler::CommandHandler(utils::file& f, HexMeApp* h): file(f), hexme(h)
+#include "./../utils/stringtools/escape.h"
+#include "./../gui/message-box/message-box-okay.hpp"
+
+#include <regex>
+#include <sstream>
+
+CommandHandler::CommandHandler(utils::file& f, HexMeApp* h): file(f), app(h)
 {
+    this->commands["help"] = &CommandHandler::onHelp;
     this->commands["exit"] = &CommandHandler::onExit;
     this->commands["open"] = &CommandHandler::onOpen;
     this->commands["goto"] = &CommandHandler::onGoto;
@@ -12,8 +18,8 @@ CommandHandler::CommandHandler(utils::file& f, HexMeApp* h): file(f), hexme(h)
     this->commands["replace"] = &CommandHandler::onReplace;
 }
 
-int64_t CommandHandler::parseInt(std::string& val) {
-
+int64_t CommandHandler::parseInt(std::string& val)
+{
     std::regex number_check(
         "^(\\-)?((0x[\\dA-fa-f]+)|(0b[0-1]+)|(\\d+))$",
         std::regex_constants::ECMAScript
@@ -86,8 +92,23 @@ std::vector<std::string> CommandHandler::lexer(std::string cmd)
 
 void CommandHandler::onExit(std::vector<std::string>& tokens)
 {
-    hexme->close();
+    app->close();
     exit(0);
+}
+
+void CommandHandler::onHelp(std::vector<std::string>& tokens)
+{
+    std::vector<std::string> msg = {
+        "exit                         - Closes application",
+        "open [file]                  - Opens the given file",
+        "goto [index]                 - Set cursor pos to index",
+        "move [distance]              - Moves cursor relative",
+        "find (first/next/last) [str] - Search for bytes",
+        "insert [str]                 - Insert bytes at cursor",
+        "replace [str]                - Overwrite bytes at cursor",
+    };
+    auto msgBox = gui::MessageBoxOkay(this->app, msg);
+    msgBox.display();
 }
 
 void CommandHandler::onOpen(std::vector<std::string>& tokens)

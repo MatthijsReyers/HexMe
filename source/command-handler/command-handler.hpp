@@ -3,9 +3,7 @@
 #include "./../app/app.hpp"
 #include "./../app/exceptions.h"
 #include "./../utils/file/file.h"
-#include "./../utils/stringtools/escape.h"
 
-#include <sstream>
 #include <string>
 #include <map>
 #include <vector>
@@ -20,12 +18,13 @@ private:
     typedef void (CommandHandler::*cmdHandler)(std::vector<std::string>& tokens);
 
     utils::file& file;
-    HexMeApp* hexme;
+    HexMeApp* app;
     std::map<std::string, cmdHandler> commands;
 
     std::vector<std::string> lexer(std::string cmd);
 
     void onExit(std::vector<std::string>& tokens);
+    void onHelp(std::vector<std::string>& tokens);
     void onOpen(std::vector<std::string>& tokens);
     void onGoto(std::vector<std::string>& tokens);
     void onMove(std::vector<std::string>& tokens);
@@ -33,10 +32,13 @@ private:
     void onInsert(std::vector<std::string>& tokens);
     void onReplace(std::vector<std::string>& tokens);
 
+    /**
+     * Parses an integer string like "-32" or "0x0FF" into an actual integer.
+     */
     int64_t parseInt(std::string& val);
 
 public:
-    CommandHandler(utils::file& file, HexMeApp* hexme);
+    CommandHandler(utils::file& file, HexMeApp* app);
 
     void executeCmd(std::string& cmd);
 };
