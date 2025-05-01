@@ -29,7 +29,11 @@ namespace gui
 	textbox& textbox::onInput(const int key)
 	{
 		if (key >= 32 && key <= 126) {
-			history[0].insert(cursorPosition,{char(key)});
+			if (historyPosition != 0) {
+				history[0] = "" + history[historyPosition];
+				historyPosition = 0;
+			}
+			history[historyPosition].insert(cursorPosition,{char(key)});
 			cursorPosition++;
 		}
 		else switch (key)
@@ -130,6 +134,7 @@ namespace gui
 				}
 				break;
 		}
+
 		return *this;
 	}
 
