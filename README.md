@@ -18,10 +18,5 @@ When commands need a string, it can either be surrounded by quotation marks to e
 | `insert "ascii chars or \xFF\x42\x79\x74\x65\x73\x00"` | The `insert` command will insert the given string at the cursor. |
 | `replace "ascii chars or \xFF\x42\x79\x74\x65\x73\x00"` | The `replace` command will replace the bytes after the cursor with the given string, extending the file if the replacement string is bigger than the space behind the cursor. |
 
-## Upcomming features
-Listed below is a list of features planned for the next version of HexMe:
-- Addition of a `delete` command allowing users to delete bytes.
-- Addition of a `previous` option to the `find` command effectively doing the same thing as the `next` option but backwards.
-
 ## Contributing
 If you'd like to help please check out the CONTRIBUTE.md file.
