@@ -1,20 +1,30 @@
 
 #include "./app/app.hpp"
-#include "./utils/argparser/argparser.h"
+#include "./utils/argparser/argparser.hpp"
 #include "./utils/file/file.h"
 
 int main(const int argc, char const **argv)
 {
-	utils::arguments programArguments;
 	utils::file file;
 	HexMeApp* application = nullptr;
 
 	try {
-		programArguments = utils::parseArgs(argc, argv);
+		auto args = utils::Arguments::parse(argc, argv);
 
-		file.open(programArguments.file);
+		if (args.versionFlag) {
+			utils::Arguments::printVersion();
+			exit(0);
+		}
 
-		application = new HexMeApp(file, programArguments);
+		if (args.helpFlag) {
+			utils::Arguments::printHelp();
+			exit(0);
+		}
+
+
+		file.open(args.file);
+
+		application = new HexMeApp(file, args);
 		application->run();
 		application->close();
 		delete application;
@@ -24,6 +34,7 @@ int main(const int argc, char const **argv)
 
 	catch (const utils::InvalidArgsException &error) {
 		std::cout << "ERROR: " << error.message << std::endl;
+		utils::Arguments::printUsage();
 	}
 
 	catch (const utils::FailedToOpenFileException &error) {
