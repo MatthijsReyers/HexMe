@@ -5,7 +5,7 @@ HexMe is an open source hex editor licensed under the MIT License. Hexme has a f
 
 ## Features
 - HexMe will give different colors to different types of bytes. Allowing the user to easily identify null bytes, bytes that translate to valid ascii characters, etc.
-- HexMe can recognize a variety of file types by identifing the file header bytes, which it will give a unique color.
+- HexMe can recognize a variety of file types by identifying the file header bytes, which it will give a unique color.
 
 ## Commands
 When commands need a string, it can either be surrounded by quotation marks to enable support for C-style escape sequences or if the string does not contain any escape sequences or spaces the quotation marks may be left out.
