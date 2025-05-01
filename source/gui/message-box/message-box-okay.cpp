@@ -1,68 +1,54 @@
-#pragma once
-
-#include <ncurses.h>
-#include <vector>
-#include <string>
+#include "./message-box-okay.hpp"
 
 namespace gui
 {
-    class msgBoxOK
-    {
-    protected:
-        const static int ESCAPE = 27;
-        const static int ENTER = 10;
-
-        int width, height;
-        int x, y;
-        WINDOW* window;
-        std::vector<std::string> text;
-
-    public:
-        msgBoxOK(std::vector<std::string> text);
-        msgBoxOK(std::string text);
-        ~msgBoxOK();
-
-        msgBoxOK& onResize();
-        msgBoxOK& onRefresh();
-    };
-
-    msgBoxOK::msgBoxOK(const std::vector<std::string> t): text(t)
+    MessageBoxOkay::MessageBoxOkay(HexMeApp* app, const std::vector<std::string> t): text(t), app(app)
     {
         height = text.size() + 3;
+
+        // Find the widest line to set the width of the msg box to.
         for (auto line : text)
             if (width < int(line.size()) + 4)
                 width = line.size() + 4;
 
         window = newwin(height, width, 0, 0);
-        onResize();
-
-        // Wait for user input.
-        getch();
     }
 
-    msgBoxOK::msgBoxOK(const std::string t)
+    MessageBoxOkay::MessageBoxOkay(HexMeApp* app, const std::string t): app(app)
     {
         text = std::vector<std::string>();
         text.push_back(t);
-
         height = 4;
         width = t.length() + 4;
-
         window = newwin(height, width, 0, 0);
-        onResize();
-
-        // Wait for user input.
-        getch();
     }
 
-    msgBoxOK::~msgBoxOK()
+    MessageBoxOkay::~MessageBoxOkay()
     {
         delwin(window);
     }
 
-    msgBoxOK& msgBoxOK::onResize()
+    MessageBoxOkay& MessageBoxOkay::display()
     {
-        x = (getmaxx(stdscr) - 12) / (26+11);
+        onResize();
+        this->onRefresh();
+
+        // Wait for user input.
+        auto input = getch();
+
+        // All other user input dismisses the message box, but a terminal resize just means we
+        // should recompute the message box position and display it again.
+        if (input == KEY_RESIZE) {
+            this->app->onResizeTerminal();
+            this->display();
+        }
+
+        return *this;
+    }
+
+    MessageBoxOkay& MessageBoxOkay::onResize()
+    {
+        x = (getmaxx(stdscr) - 13) / (26+11);
         x = (x * (26+11)) + 12;
         x = (x - width) / 2;
 
@@ -75,7 +61,7 @@ namespace gui
         return *this;
     }
 
-    msgBoxOK& msgBoxOK::onRefresh()
+    MessageBoxOkay& MessageBoxOkay::onRefresh()
     {
         const static char* horizontal = "═";
 		const static char* vertical = "║";

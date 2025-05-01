@@ -1,7 +1,7 @@
 #include "command-handler.hpp"
 #include <regex>
 
-CommandHandler::CommandHandler(utils::file& f, app* h): file(f), hexme(h)
+CommandHandler::CommandHandler(utils::file& f, HexMeApp* h): file(f), hexme(h)
 {
     this->commands["exit"] = &CommandHandler::onExit;
     this->commands["open"] = &CommandHandler::onOpen;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./../app/app.h"
+#include "./../app/app.hpp"
 #include "./../app/exceptions.h"
 #include "./../utils/file/file.h"
 #include "./../utils/stringtools/escape.h"
@@ -20,7 +20,7 @@ private:
     typedef void (CommandHandler::*cmdHandler)(std::vector<std::string>& tokens);
 
     utils::file& file;
-    app* hexme;
+    HexMeApp* hexme;
     std::map<std::string, cmdHandler> commands;
 
     std::vector<std::string> lexer(std::string cmd);
@@ -36,7 +36,7 @@ private:
     int64_t parseInt(std::string& val);
 
 public:
-    CommandHandler(utils::file& file, app* hexme);
+    CommandHandler(utils::file& file, HexMeApp* hexme);
 
     void executeCmd(std::string& cmd);
 };

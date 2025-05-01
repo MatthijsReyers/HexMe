@@ -1,5 +1,5 @@
 
-#include "./app/app.h"
+#include "./app/app.hpp"
 #include "./utils/argparser/argparser.h"
 #include "./utils/file/file.h"
 
@@ -7,14 +7,14 @@ int main(const int argc, char const **argv)
 {
 	utils::arguments programArguments;
 	utils::file file;
-	app* application = nullptr;
+	HexMeApp* application = nullptr;
 
 	try {
 		programArguments = utils::parseArgs(argc, argv);
 
 		file.open(programArguments.file);
 
-		application = new app(file, programArguments);
+		application = new HexMeApp(file, programArguments);
 		application->run();
 		application->close();
 		delete application;

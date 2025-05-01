@@ -1,10 +1,8 @@
 #pragma once
 
 #include "./exceptions.h"
-
 #include "./../gui/textbox/textbox.h"
 #include "./../gui/viewer/viewer.h"
-
 #include "./../utils/argparser/argparser.h"
 #include "./../utils/file/file.h"
 
@@ -15,12 +13,10 @@
 #include <ncurses.h>
 #include <locale.h>
 
-#define byte char
-
-class app
+class HexMeApp
 {
 	private:
-		gui::textbox* cmdPromt;
+		gui::textbox* commandPrompt;
 		gui::viewer* hexView;
 
 		utils::file& file;
@@ -28,14 +24,14 @@ class app
 
 
 	public:
-		app(utils::file& File, utils::arguments& Args);
+		HexMeApp(utils::file& File, utils::arguments& Args);
 
-		app& close();
-		app& run();
+		HexMeApp& close();
+		HexMeApp& run();
 		
-		app& onMoveCursor(int n);
-		app& onResizeTerminal();
-		app& onHandleInput(const int key_code);
+		HexMeApp& onMoveCursor(int n);
+		HexMeApp& onResizeTerminal();
+		HexMeApp& onHandleInput(const int key_code);
 
-		app& executeCmd(const std::string& cmd);
+		HexMeApp& executeCmd(const std::string& cmd);
 };

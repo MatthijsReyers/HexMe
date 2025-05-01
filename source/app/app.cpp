@@ -1,8 +1,8 @@
-#include "app.h"
+#include "app.hpp"
 #include "./../command-handler/command-handler.hpp"
-#include "./../gui/msgBox/msgBoxOK.h"
+#include "./../gui/message-box/message-box-okay.hpp"
 
-app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
+HexMeApp::HexMeApp(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 {
 	// Setup nCurses.
 	setlocale(LC_ALL, "");
@@ -40,37 +40,37 @@ app::app(utils::file& File, utils::arguments& Args) : file(File), args(Args)
 	refresh();
 
 	// Setup all UI elements.
-	cmdPromt = new gui::textbox();
+	commandPrompt = new gui::textbox();
 	hexView = new gui::viewer(this->file);
 
-	// Calculate intial window values.
+	// Calculate initial window values.
 	hexView->onResize();
-	cmdPromt->onResize();
+	commandPrompt->onResize();
 
 	// Do inital refresh for all windows.
 	hexView->onRefresh();
-	cmdPromt->onRefresh();
+	commandPrompt->onRefresh();
 }
 
-app& app::onResizeTerminal() {
+HexMeApp& HexMeApp::onResizeTerminal() {
 	if (getmaxx(stdscr) < 59)
 		throw WindowTooSmallException();
 
 	// Update all window content.
 	hexView->onResize();
-	cmdPromt->onResize();
+	commandPrompt->onResize();
 
 	// Needed for some reason?
 	refresh();
 
 	// Refresh all windows.
 	hexView->onRefresh();
-	cmdPromt->onRefresh();
+	commandPrompt->onRefresh();
 	
 	return *this;
 }
 
-app& app::onHandleInput(const int key_code) {
+HexMeApp& HexMeApp::onHandleInput(const int key_code) {
 	if (key_code == KEY_RESIZE) {
 		this->onResizeTerminal();
 		return *this;
@@ -78,25 +78,26 @@ app& app::onHandleInput(const int key_code) {
 
 	if (key_code == 13 /* KEY_ENTER */) {
 		try {
-			auto cmd = cmdPromt->getText();
+			auto cmd = commandPrompt->getText();
 			CommandHandler cmdParser(file,this);
 			cmdParser.executeCmd(cmd);
 			hexView->onRefresh();
-			cmdPromt->clearText();
-			cmdPromt->onRefresh();
-			cmdPromt->focus = false;
+			commandPrompt->clearText();
+			commandPrompt->onRefresh();
+			commandPrompt->focus = false;
 		}
 		catch (const CmdSyntaxErrorException &error) {
-			auto fix = gui::msgBoxOK(error.message);
+			auto msgBox = gui::MessageBoxOkay(this, error.message);
+			msgBox.display();
 			hexView->onRefresh();
-			cmdPromt->clearText();
-			cmdPromt->onRefresh();
+			commandPrompt->clearText();
+			commandPrompt->onRefresh();
 		}
 	}
 
-	else if (cmdPromt->focus) {
-		cmdPromt->onInput(key_code);
-		cmdPromt->onRefresh();
+	else if (commandPrompt->focus) {
+		commandPrompt->onInput(key_code);
+		commandPrompt->onRefresh();
 	}
 
 	else {
@@ -115,18 +116,18 @@ app& app::onHandleInput(const int key_code) {
 				file.incCursor();
 				break;
 			default:
-				cmdPromt->focus = true;
-				cmdPromt->onInput(key_code);
+				commandPrompt->focus = true;
+				commandPrompt->onInput(key_code);
 				break;
 		}
 		hexView->onRefresh();
-		cmdPromt->onRefresh();
+		commandPrompt->onRefresh();
 	}
 
 	return *this;
 }
 
-app& app::run()
+HexMeApp& HexMeApp::run()
 {
 	int saw_escape = false;
 	while (true)
@@ -154,7 +155,7 @@ app& app::run()
 	return *this;
 }
 
-app& app::close()
+HexMeApp& HexMeApp::close()
 {
 	// Set terminal back to normal mode.
 	echo();
