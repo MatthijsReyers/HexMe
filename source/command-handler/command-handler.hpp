@@ -28,10 +28,12 @@ private:
     void onExit(std::vector<std::string>& tokens);
     void onOpen(std::vector<std::string>& tokens);
     void onGoto(std::vector<std::string>& tokens);
+    void onMove(std::vector<std::string>& tokens);
     void onFind(std::vector<std::string>& tokens);
     void onInsert(std::vector<std::string>& tokens);
     void onReplace(std::vector<std::string>& tokens);
-    void onMove(std::vector<std::string>& tokens);
+
+    int64_t parseInt(std::string& val);
 
 public:
     CommandHandler(utils::file& file, app* hexme);

@@ -1,13 +1,45 @@
 #include "command-handler.hpp"
+#include <regex>
 
 CommandHandler::CommandHandler(utils::file& f, app* h): file(f), hexme(h)
 {
     this->commands["exit"] = &CommandHandler::onExit;
     this->commands["open"] = &CommandHandler::onOpen;
     this->commands["goto"] = &CommandHandler::onGoto;
+    this->commands["move"] = &CommandHandler::onMove;
     this->commands["find"] = &CommandHandler::onFind;
     this->commands["insert"] = &CommandHandler::onInsert;
     this->commands["replace"] = &CommandHandler::onReplace;
+}
+
+int64_t CommandHandler::parseInt(std::string& val) {
+
+    std::regex number_check(
+        "^(\\-)?((0x[\\dA-fa-f]+)|(0b[0-1]+)|(\\d+))$",
+        std::regex_constants::ECMAScript
+    );
+
+    if (!std::regex_search(val, number_check)) {
+        std::stringstream ss;
+        ss << "Expression \"" << val << "\" is not a valid integer.";
+        throw CmdSyntaxErrorException(ss.str());
+    }
+
+    auto base = 10;
+
+    auto pos = val.find("0x");
+    if (pos != std::string::npos) {
+        base = 16;
+        val.erase(pos, 2);
+    }
+
+    pos = val.find("0b");
+    if (pos != std::string::npos) {
+        base = 2;
+        val.erase(pos, 2);
+    }
+
+    return std::stol(val, nullptr, base);
 }
 
 std::vector<std::string> CommandHandler::lexer(std::string cmd)
@@ -139,6 +171,19 @@ void CommandHandler::onGoto(std::vector<std::string>& tokens)
         throw CmdSyntaxErrorException("Provided number is too large.");}
 }
 
+void CommandHandler::onMove(std::vector<std::string>& tokens)
+{
+    if (tokens.size() != 2)
+        throw CmdSyntaxErrorException("Please use the correct syntax: move [number].");
+
+    int64_t direction = parseInt(tokens[1]);
+    int64_t current = this->file.getCursorLocation();
+    int64_t end = this->file.getFileEnd();
+    int64_t position = std::clamp(current + direction, int64_t{0}, end);
+
+    this->file.moveCursor(position);
+}
+
 void CommandHandler::onFind(std::vector<std::string>& tokens)
 {
     if (tokens.size() == 1)
@@ -265,3 +310,5 @@ void CommandHandler::executeCmd(std::string& cmd)
         throw CmdSyntaxErrorException("That command does not exist.");
     }
 }
+
+
