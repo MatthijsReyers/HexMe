@@ -15,7 +15,7 @@ namespace utils
             bool showVersion = false;
             bool showLineNums = true;
 
-            int forceCollumCount = 0;
+            int forceColumnCount = 0;
 
             std::string file;
     };

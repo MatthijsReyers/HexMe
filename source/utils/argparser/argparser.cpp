@@ -36,7 +36,7 @@ namespace utils
                     try {
                         // Convert input to an int.
                         int count = std::stoi(argv[i+1]);
-                        parsed.forceCollumCount = count;
+                        parsed.forceColumnCount = count;
 
                         // Skip next item in array.
                         i++;
