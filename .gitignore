@@ -1,6 +1,7 @@
 .vscode
 build/
 ./hexme
+hexme
 
 CMakeLists.txt.user
 CMakeCache.txt

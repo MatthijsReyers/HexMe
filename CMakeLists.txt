@@ -3,8 +3,9 @@ project(HexMe)
 
 find_package(Curses REQUIRED)
 
-file (GLOB_RECURSE HexMe_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
-file (GLOB_RECURSE HexMe_HEADERS CONFIGURE_DEPENDS "src/*.h")
+file (GLOB_RECURSE HexMe_SOURCES CONFIGURE_DEPENDS "source/*.cpp")
+file (GLOB_RECURSE HexMe_HEADERS CONFIGURE_DEPENDS "source/*.h")
+file (GLOB_RECURSE HexMe_HEADERS CONFIGURE_DEPENDS "source/*.hpp")
 
 set (HexMe_INCLUDE_DIRS "")
 foreach (_headerFile ${HexMe_HEADERS})
