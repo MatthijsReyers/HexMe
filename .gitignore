@@ -1,14 +1,16 @@
 .vscode
+build/
+./hexme
 
-# Folders
-# ======================
-obj
-obj/
-./obj/
-./obj/*
-bin
-bin/
-./bin/
-./bin/*
-./bin/hexme
-./bin/hexme
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
