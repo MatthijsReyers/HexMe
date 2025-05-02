@@ -26,7 +26,7 @@ class Arguments
         FlagArgument version = FlagArgument::create<"-v", "--version">(this, "Only output the version of the app", false);
         FlagArgument lineNumbers = FlagArgument::create<"-n">(this, "Do not display line numbers", false);
 
-        // IntArgument forceColumns = IntArgument::create<"-c", "--force-columns">(this, "Force the app to show exactly this amount of columns even if more columns would fit in the terminal window");
+        IntArgument forceColumns = IntArgument::create<"-c", "--max-columns">(this, "Force the app to show exactly this amount of columns even if more columns would fit in the terminal window", 1, 8, 0);
 
         std::string file;
 };

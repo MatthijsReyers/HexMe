@@ -43,6 +43,10 @@ HexMeApp::HexMeApp(utils::file& File, Arguments& Args) : file(File), args(Args)
 	commandPrompt = new gui::textbox();
 	hexView = new gui::viewer(this->file);
 
+	if (args.forceColumns.value() > 0) {
+		hexView->maxColumns = args.forceColumns.value();
+	}
+
 	// Calculate initial window values.
 	hexView->onResize();
 	commandPrompt->onResize();

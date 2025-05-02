@@ -9,12 +9,6 @@ namespace gui
 		// Create window
 		this->window = newwin(50, 50, 1, 0);
 		this->headerLength = utils::getHeaderLength(file.getHeader());
-
-		// Initial drawing of window.
-		this->onResize();
-
-		// Initial refresh of window.
-		this->onRefresh();
 	}
 
 	viewer::~viewer()
@@ -58,11 +52,16 @@ namespace gui
 		wclear(window);
 
 		// Calculate new row & column count.
-		this->columns = (getmaxx(stdscr) - LINENUMBERSWIDTH - 1) / COLUMNWIDTH;
+		this->columns = (getmaxx(stdscr) - LINE_NUMBERS_WIDTH - 1) / COLUMN_WIDTH;
 		this->rows = getmaxy(stdscr) - 4;
 
+		// Clamp columns if needed
+		if (this->maxColumns.has_value()) {
+			this->columns = std::min(this->columns, this->maxColumns.value());
+		}
+
 		// Calculate new size.
-		this->width = LINENUMBERSWIDTH + columns * COLUMNWIDTH + 1; 
+		this->width = LINE_NUMBERS_WIDTH + columns * COLUMN_WIDTH + 1; 
 		this->height = getmaxy(stdscr) - 2;
 
 		// Resize window.
@@ -81,7 +80,7 @@ namespace gui
 		return this->columns;
 	}
 
-	int viewer::getByteColor(byte b, unsigned long long index, unsigned long long cursor)
+	int viewer::getByteColor(byte b, u_int64_t index, u_int64_t cursor)
 	{
 		int c = (int)((unsigned char)b);
 		if (index == cursor) return 9;
@@ -94,12 +93,12 @@ namespace gui
 		else return 0;
 	}
 
-	void viewer::drawRow(unsigned long long r)
+	void viewer::drawRow(u_int64_t r)
 	{
 		auto cursor = file.getCursorLocation();
 
 		// Row number.
-		unsigned long long rowIndex = ((r+topRow) * columns * 8);
+		u_int64_t rowIndex = ((r+topRow) * columns * 8);
 		std::stringstream ss;
 		ss << std::hex << rowIndex;
 		std::string zeros = "00000000";
@@ -209,12 +208,12 @@ namespace gui
 		}
 	}
 
-	unsigned long long viewer::getYofCursor(unsigned long long cursor)
+	u_int64_t viewer::getYofCursor(u_int64_t cursor)
 	{
 		return cursor / (columns*8);
 	}
 
-	unsigned long long viewer::getXofCursor(unsigned long long cursor)
+	u_int64_t viewer::getXofCursor(u_int64_t cursor)
 	{
 		return cursor % (columns*8);
 	}

@@ -7,33 +7,40 @@
 #include <iostream>
 #include <sstream>
 #include <bitset>
+#include <optional>
 
 namespace gui
 {
     class viewer
     {
     private:
-        const static int LINENUMBERSWIDTH = 8 + 2 + 2;
-        const static int COLUMNWIDTH = (8 * 3 + 2) + (8 + 3);
+        const static int LINE_NUMBERS_WIDTH = 8 + 2 + 2;
+        const static int COLUMN_WIDTH = (8 * 3 + 2) + (8 + 3);
 
         WINDOW* window;
         utils::file file;
 
-        int width, height;
-        int columns, rows; 
+        u_int32_t width, height;
+        u_int32_t columns, rows; 
 
-        unsigned long long topRow = 0;
-        unsigned long long headerLength = 0;
+        u_int64_t topRow = 0;
+        u_int64_t headerLength = 0;
 
-        void drawRow(unsigned long long r);
+        void drawRow(u_int64_t r);
         void drawBorders();
 
-        int getByteColor(byte b, unsigned long long index, unsigned long long cursor);
+        int getByteColor(byte b, u_int64_t index, u_int64_t cursor);
 
-        unsigned long long getYofCursor(const unsigned long long cursor);
-        unsigned long long getXofCursor(const unsigned long long cursor);
+        u_int64_t getYofCursor(const u_int64_t cursor);
+        u_int64_t getXofCursor(const u_int64_t cursor);
 
     public:
+        /**
+         * Maximum amount of columns the hex view is allowed to display, note that the UI will not
+         * reflect changes to this value until onRefresh() is called.
+         */
+        std::optional<u_int32_t> maxColumns;
+
         viewer(utils::file File);
         ~viewer();
         
