@@ -1,4 +1,3 @@
-
 #include "./app/app.hpp"
 #include "./utils/argparser/argparser.hpp"
 #include "./utils/file/file.h"
@@ -33,13 +32,15 @@ int main(const int argc, char const **argv)
 	}
 
 	catch (const utils::InvalidArgsException &error) {
-		std::cout << "ERROR: " << error.message << std::endl;
+		std::cerr << "ERROR: " << error.message << std::endl;
 		utils::Arguments::printUsage();
+		exit(1);
 	}
 
 	catch (const utils::FailedToOpenFileException &error) {
 		file.close();
-		std::cout << "ERROR: " << error.message << ": \"" << error.path << "\"" << std::endl;
+		std::cerr << "ERROR: " << error.message << ": \"" << error.path << "\"" << std::endl;
+		exit(1);
 	}
 	
 	catch (const HexMeException &error) {
@@ -48,6 +49,7 @@ int main(const int argc, char const **argv)
 			application->close();
 			delete application;
 		}
-		std::cout << "ERROR: " << error.message << std::endl;
+		std::cerr << "ERROR: " << error.message << std::endl;
+		exit(1);
 	}
 }
