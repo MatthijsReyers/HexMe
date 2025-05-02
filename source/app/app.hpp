@@ -3,7 +3,7 @@
 #include "./exceptions.h"
 #include "./../gui/textbox/textbox.h"
 #include "./../gui/viewer/viewer.h"
-#include "./../utils/argparser/argparser.hpp"
+#include "./../utils/argparser/arguments.hpp"
 #include "./../utils/file/file.h"
 
 #include <fstream>
@@ -20,11 +20,11 @@ class HexMeApp
 		gui::viewer* hexView;
 
 		utils::file& file;
-		utils::Arguments& args;
+		Arguments& args;
 
 
 	public:
-		HexMeApp(utils::file& File, utils::Arguments& Args);
+		HexMeApp(utils::file& File, Arguments& Args);
 
 		HexMeApp& close();
 		HexMeApp& run();

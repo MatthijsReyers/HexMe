@@ -1,5 +1,6 @@
 #include "./app/app.hpp"
-#include "./utils/argparser/argparser.hpp"
+#include "./utils/argparser/arguments.hpp"
+#include "./utils/argparser/exceptions.hpp"
 #include "./utils/file/file.h"
 
 int main(const int argc, char const **argv)
@@ -8,18 +9,20 @@ int main(const int argc, char const **argv)
 	HexMeApp* application = nullptr;
 
 	try {
-		auto args = utils::Arguments::parse(argc, argv);
+		auto args = Arguments::parse(argc, argv);
 
-		if (args.versionFlag) {
-			utils::Arguments::printVersion();
+		if (args.version.value()) {
+			Arguments::printVersion();
 			exit(0);
 		}
 
-		if (args.helpFlag) {
-			utils::Arguments::printHelp();
+		if (args.help.value()) {
+			Arguments::printHelp();
 			exit(0);
 		}
 
+    	if (args.file == "")
+        	throw InvalidArgsException("Please provide a file to display.");
 
 		file.open(args.file);
 
@@ -31,9 +34,9 @@ int main(const int argc, char const **argv)
 		file.close();
 	}
 
-	catch (const utils::InvalidArgsException &error) {
+	catch (const InvalidArgsException &error) {
 		std::cerr << "ERROR: " << error.message << std::endl;
-		utils::Arguments::printUsage();
+		Arguments::printUsage();
 		exit(1);
 	}
 

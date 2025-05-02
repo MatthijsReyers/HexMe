@@ -2,7 +2,7 @@
 #include "./../command-handler/command-handler.hpp"
 #include "./../gui/message-box/message-box-okay.hpp"
 
-HexMeApp::HexMeApp(utils::file& File, utils::Arguments& Args) : file(File), args(Args)
+HexMeApp::HexMeApp(utils::file& File, Arguments& Args) : file(File), args(Args)
 {
 	// Setup nCurses.
 	setlocale(LC_ALL, "");
