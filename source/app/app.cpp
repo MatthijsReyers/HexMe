@@ -80,7 +80,16 @@ HexMeApp& HexMeApp::onHandleInput(const int key_code) {
 		return *this;
 	}
 
-	if (key_code == 13 /* KEY_ENTER */) {
+	std::stringstream ss;
+	ss << "key_code: " << key_code;
+	mvaddstr(0,0,ss.str().c_str());
+
+	if (key_code == 4) {
+		this->close();
+		exit(0);
+	}
+
+	else if (key_code == 13 /* KEY_ENTER */) {
 		try {
 			auto cmd = commandPrompt->getText();
 			CommandHandler cmdParser(file,this);
