@@ -80,10 +80,6 @@ HexMeApp& HexMeApp::onHandleInput(const int key_code) {
 		return *this;
 	}
 
-	std::stringstream ss;
-	ss << "key_code: " << key_code;
-	mvaddstr(0,0,ss.str().c_str());
-
 	if (key_code == 4) {
 		this->close();
 		exit(0);
