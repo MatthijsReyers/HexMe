@@ -2,7 +2,11 @@
 #include "./../command-handler/command-handler.hpp"
 #include "./../gui/message-box/message-box-okay.hpp"
 
-HexMeApp::HexMeApp(utils::file& File, Arguments& Args) : file(File), args(Args)
+const static int CTRL_D = 4;
+const static int ENTER = 13;
+const static int ESCAPE = 27;
+
+HexMeApp::HexMeApp(utils::file &File, Arguments &Args) : file(File), args(Args)
 {
 	// Setup nCurses.
 	setlocale(LC_ALL, "");
@@ -16,16 +20,16 @@ HexMeApp::HexMeApp(utils::file& File, Arguments& Args) : file(File), args(Args)
 	{
 		use_default_colors();
 		start_color();
-		
-		init_pair(0, -1, -1);	// DEFAULT
-		init_pair(1, 0, -1);	// BLACK
-		init_pair(2, 1, -1);	// RED
-		init_pair(3, 2, -1); 	// BLUE
-		init_pair(4, 3, -1);	// GREEN
-		init_pair(5, 4, -1);	// YELLOW
-		init_pair(6, 5, -1);	// PURPLE
-		init_pair(7, 6, -1);	// CYAN
-		init_pair(8, 7, -1);	// WHITE
+
+		init_pair(0, -1, -1);					// DEFAULT
+		init_pair(1, 0, -1);					// BLACK
+		init_pair(2, 1, -1);					// RED
+		init_pair(3, 2, -1);					// BLUE
+		init_pair(4, 3, -1);					// GREEN
+		init_pair(5, 4, -1);					// YELLOW
+		init_pair(6, 5, -1);					// PURPLE
+		init_pair(7, 6, -1);					// CYAN
+		init_pair(8, 7, -1);					// WHITE
 		init_pair(9, COLOR_BLACK, COLOR_WHITE); // CURSOR
 	}
 
@@ -34,7 +38,7 @@ HexMeApp::HexMeApp(utils::file& File, Arguments& Args) : file(File), args(Args)
 	ss << file.getName();
 	if (file.getHeader() != "")
 		ss << " | " << file.getHeader();
-	mvaddstr(0,0,ss.str().c_str());
+	mvaddstr(0, 0, ss.str().c_str());
 
 	// Initial refresh.
 	refresh();
@@ -43,7 +47,8 @@ HexMeApp::HexMeApp(utils::file& File, Arguments& Args) : file(File), args(Args)
 	commandPrompt = new gui::textbox();
 	hexView = new gui::viewer(this->file);
 
-	if (args.forceColumns.value() > 0) {
+	if (args.forceColumns.value() > 0)
+	{
 		hexView->maxColumns = args.forceColumns.value();
 	}
 
@@ -56,7 +61,8 @@ HexMeApp::HexMeApp(utils::file& File, Arguments& Args) : file(File), args(Args)
 	commandPrompt->onRefresh();
 }
 
-HexMeApp& HexMeApp::onResizeTerminal() {
+HexMeApp &HexMeApp::onResizeTerminal()
+{
 	if (getmaxx(stdscr) < 59)
 		throw WindowTooSmallException();
 
@@ -70,32 +76,38 @@ HexMeApp& HexMeApp::onResizeTerminal() {
 	// Refresh all windows.
 	hexView->onRefresh();
 	commandPrompt->onRefresh();
-	
+
 	return *this;
 }
 
-HexMeApp& HexMeApp::onHandleInput(const int key_code) {
-	if (key_code == KEY_RESIZE) {
+HexMeApp &HexMeApp::onHandleInput(const int key_code)
+{
+	if (key_code == KEY_RESIZE)
+	{
 		this->onResizeTerminal();
 		return *this;
 	}
 
-	if (key_code == 4) {
+	if (key_code == CTRL_D)
+	{
 		this->close();
 		exit(0);
 	}
 
-	else if (key_code == 13 /* KEY_ENTER */) {
-		try {
+	else if (key_code == ENTER)
+	{
+		try
+		{
 			auto cmd = commandPrompt->getText();
-			CommandHandler cmdParser(file,this);
+			CommandHandler cmdParser(file, this);
 			cmdParser.executeCmd(cmd);
 			hexView->onRefresh();
 			commandPrompt->clearText();
 			commandPrompt->onRefresh();
 			commandPrompt->focus = false;
 		}
-		catch (const CmdSyntaxErrorException &error) {
+		catch (const CmdSyntaxErrorException &error)
+		{
 			auto msgBox = gui::MessageBoxOkay(this, error.message);
 			msgBox.display();
 			hexView->onRefresh();
@@ -104,25 +116,28 @@ HexMeApp& HexMeApp::onHandleInput(const int key_code) {
 		}
 	}
 
-	else if (commandPrompt->focus) {
+	else if (commandPrompt->focus)
+	{
 		commandPrompt->onInput(key_code);
 		commandPrompt->onRefresh();
 	}
 
 	else {
-		switch (key_code)
-		{
-			case KEY_UP: 
-				file.decCursor(hexView->getColumnCount()*8);
+		switch (key_code) {
+			case KEY_UP:
+				file.decCursor(hexView->getColumnCount() * 8);
 				break;
 			case KEY_DOWN:
-				file.incCursor(hexView->getColumnCount()*8);
+				file.incCursor(hexView->getColumnCount() * 8);
 				break;
 			case KEY_LEFT:
 				file.decCursor();
 				break;
 			case KEY_RIGHT:
 				file.incCursor();
+				break;
+			case ESCAPE:
+				commandPrompt->focus = true;
 				break;
 			default:
 				commandPrompt->focus = true;
@@ -136,26 +151,30 @@ HexMeApp& HexMeApp::onHandleInput(const int key_code) {
 	return *this;
 }
 
-HexMeApp& HexMeApp::run()
+HexMeApp &HexMeApp::run()
 {
 	int saw_escape = false;
 	while (true)
 	{
 		int key_code = getch();
 
-		if (!saw_escape && key_code == 27 /* KEY_ESC */ ){
+		if (!saw_escape && key_code == ESCAPE)
+		{
 			saw_escape = true;
 		}
 
-		if (saw_escape) {
-			if (key_code == 100) {
+		if (saw_escape)
+		{
+			if (key_code == 100)
+			{
 				key_code = gui::textbox::CTRL_DELETE;
 			}
 		}
 
-		if (saw_escape && key_code != 27 /* KEY_ESC */ ){
+		if (saw_escape && key_code != ESCAPE)
+		{
 			saw_escape = false;
-		} 
+		}
 
 		this->onHandleInput(key_code);
 	}
@@ -164,7 +183,7 @@ HexMeApp& HexMeApp::run()
 	return *this;
 }
 
-HexMeApp& HexMeApp::close()
+HexMeApp &HexMeApp::close()
 {
 	// Set terminal back to normal mode.
 	echo();
