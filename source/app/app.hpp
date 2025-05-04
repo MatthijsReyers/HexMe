@@ -2,9 +2,9 @@
 
 #include "./exceptions.h"
 #include "./../gui/textbox/textbox.h"
-#include "./../gui/viewer/viewer.h"
+#include "./../gui/hex-viewer/hex-viewer.hpp"
 #include "./../utils/argparser/arguments.hpp"
-#include "./../utils/file/file.h"
+#include "./../file/file.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -17,21 +17,22 @@ class HexMeApp
 {
 	private:
 		gui::textbox* commandPrompt;
-		gui::viewer* hexView;
+		gui::HexViewer* hexView;
 
-		utils::file& file;
+		std::shared_ptr<File> file;
 		Arguments& args;
 
+		HexMeApp(const HexMeApp& copy) = delete;
 
 	public:
-		HexMeApp(utils::file& File, Arguments& Args);
+		HexMeApp(Arguments& Args);
 
 		HexMeApp& close();
 		HexMeApp& run();
 		
-		HexMeApp& onMoveCursor(int n);
+		HexMeApp& onRefresh();
 		HexMeApp& onResizeTerminal();
-		HexMeApp& onHandleInput(const int key_code);
+		void onHandleInput(const int key_code);
 
 		HexMeApp& executeCmd(const std::string& cmd);
 };

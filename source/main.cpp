@@ -1,11 +1,10 @@
 #include "./app/app.hpp"
 #include "./utils/argparser/arguments.hpp"
 #include "./utils/argparser/exceptions.hpp"
-#include "./utils/file/file.h"
+#include "./file/file.hpp"
 
 int main(const int argc, char const **argv)
 {
-	utils::file file;
 	HexMeApp* application = nullptr;
 
 	try {
@@ -24,14 +23,10 @@ int main(const int argc, char const **argv)
     	if (args.file == "")
         	throw InvalidArgsException("Please provide a file to display.");
 
-		file.open(args.file);
-
-		application = new HexMeApp(file, args);
+		application = new HexMeApp(args);
 		application->run();
 		application->close();
 		delete application;
-		
-		file.close();
 	}
 
 	catch (const InvalidArgsException &error) {
@@ -40,14 +35,12 @@ int main(const int argc, char const **argv)
 		exit(1);
 	}
 
-	catch (const utils::FailedToOpenFileException &error) {
-		file.close();
+	catch (const FailedToOpenFileException &error) {
 		std::cerr << "ERROR: " << error.message << ": \"" << error.path << "\"" << std::endl;
 		exit(1);
 	}
 	
 	catch (const HexMeException &error) {
-		file.close();
 		if (application != nullptr) {
 			application->close();
 			delete application;

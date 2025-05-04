@@ -1,26 +1,32 @@
-#include "viewer.h"
+#include "hex-viewer.hpp"
 
 #include <sstream>
 
 namespace gui
 {
-	viewer::viewer(utils::file File) : file(File)
+	HexViewer::HexViewer(std::weak_ptr<File> f) : file(f)
 	{
-		// Create window
 		this->window = newwin(50, 50, 1, 0);
-		this->headerLength = utils::getHeaderLength(file.getHeader());
 	}
 
-	viewer::~viewer()
+	HexViewer::~HexViewer()
 	{
 		delwin(window);
 	}
 
-	viewer& viewer::onRefresh()
+	HexViewer& HexViewer::onRefresh()
 	{
-		auto cursor = file.getCursorLocation();
+		auto f = this->file.lock();
+
+		if (f->fileType.has_value()) {
+			this->headerLength = f->fileType.value().second.size();
+		} else {
+			this->headerLength = 0;
+		}
+
+		auto cursor = f->getCursor();
 		auto cursorRow = cursor / (columns*8);
-		auto lastRow = file.getFileEnd() / (columns*8);
+		auto lastRow = f->size() / (columns*8);
 		auto bottomRow = topRow + rows - 1;
 
 		// Check: there can never be an empty row unless the window is bigger than the file.
@@ -38,7 +44,9 @@ namespace gui
 		if (cursorRow > bottomRow)
 			topRow = cursorRow - rows + 1;
 
-		// Draw all rows to terminal.
+		// Redraw all elements;
+		wclear(window);
+		this->drawBorders();
 		for (int r = 0; r < rows; r++)
 			this->drawRow(r);
 
@@ -46,11 +54,8 @@ namespace gui
 		return *this;
 	}
 
-	viewer& viewer::onResize()
+	HexViewer& HexViewer::onResize()
 	{
-		// // Clear window.
-		wclear(window);
-
 		// Calculate new row & column count.
 		this->columns = (getmaxx(stdscr) - LINE_NUMBERS_WIDTH - 1) / COLUMN_WIDTH;
 		this->rows = getmaxy(stdscr) - 4;
@@ -68,19 +73,17 @@ namespace gui
 		wresize(window, height, width);
 
 		// Draw window contents.
-		this->drawBorders();
-		for (int r = 0; r < rows; r++)
-			this->drawRow(r);
+		this->onRefresh();
 
 		return *this;
 	}
 
-	int viewer::getColumnCount()
+	int HexViewer::getColumnCount()
 	{
 		return this->columns;
 	}
 
-	int viewer::getByteColor(byte b, u_int64_t index, u_int64_t cursor)
+	int HexViewer::getByteColor(u_int8_t b, u_int64_t index, u_int64_t cursor)
 	{
 		int c = (int)((unsigned char)b);
 		if (index == cursor) return 9;
@@ -93,77 +96,82 @@ namespace gui
 		else return 0;
 	}
 
-	void viewer::drawRow(u_int64_t r)
+	std::string HexViewer::byteToHexString(const u_int8_t b)
+    {
+        std::stringstream ss;
+        int converted = (int)((unsigned char)b);
+        if (converted <= 0x0f) ss << "0";
+        ss << std::hex << converted;
+        return ss.str();
+    }
+
+	void HexViewer::drawRow(u_int64_t r)
 	{
-		auto cursor = file.getCursorLocation();
+		auto f = this->file.lock();
+		auto cursor = f->getCursor();
 
-		// Row number.
-		u_int64_t rowIndex = ((r+topRow) * columns * 8);
-		std::stringstream ss;
-		ss << std::hex << rowIndex;
-		std::string zeros = "00000000";
-		zeros.erase(zeros.length() - ss.str().length());
-		zeros.append(ss.str());
-
-		// Draw & color row number.
-		if (rowIndex == getYofCursor(cursor)*columns*8)
-			wattron(window, COLOR_PAIR(9));
-		mvwprintw(window, 1+r, 2, zeros.c_str());
-		wattroff(window, COLOR_PAIR(9));
-
-		// Set cursor to start of row.
-		file.moveCursor(rowIndex);
-
-		if (file.getFileEnd() < rowIndex) {
-			for (int c = 0; c < columns; c++) {
-				for (int b = 0; b < 8; b++) {
-					mvwprintw(window, 1+r, 13 + c*26 + b*3, "  ");
-					mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, " ");;
-				}
-			}
-		}
-
-		else for (int c = 0; c < columns; c++) {
-			for (int b = 0; b < 8; b++) {
-				// Check if there are any bytes left in the buffer.
-				if (file.getCursorLocation() > file.getFileEnd()) {
-					mvwprintw(window, 1+r, 13 + c*26 + b*3, "  ");
-					mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, " ");
-				}
-				else {
-					// Get byte & increment file cursor.
-					byte current = file.getCurrentByte();
-					file.moveCursor(file.getCursorLocation()+1);
-
-					// Get appropriate color for byte.
-					int color = getByteColor(current, ((r+topRow)*columns*8)+(c*8)+b, cursor);
-					wattron(window, COLOR_PAIR(color));
-
-					// Draw hex representation of byte.
-					mvwprintw(window, 1+r, 13 + c*26 + b*3, utils::byteToHexString(current).c_str());
-
-					// Draw char representation of byte.
-					if (current < 127 && current > 32) mvwaddch(window, 1+r, 13 + columns*26 + c*11 + b, current);
-					else mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, ".");
-
-					// Disable color again.
-					wattroff(window, COLOR_PAIR(color));
-				}
-			}
-		}
-		
+		// Draw interior borders
 		for (int c = 1; c < columns; c++) {
 			mvwprintw(window, 1+r, 11 + c*26, "│");
 			mvwprintw(window, 1+r, 11 + columns*26 + c*11, "│");
 		}
-
 		mvwprintw(window, 1+r, 11 + columns*26, "║");
 		mvwprintw(window, 1+r, 11, "║");
 
-		file.moveCursor(cursor);
+		// Address of the first byte in this row.
+		u_int64_t rowIndex = ((r+topRow) * columns * 8);
+
+		// Is this row index even still inside the file?
+		if (f->size() < rowIndex) {
+			return;
+		}
+
+		// Draw row number
+		std::stringstream ss;
+		ss << std::hex << rowIndex;
+		std::string rowNumber = "00000000";
+		rowNumber.erase(rowNumber.length() - ss.str().length());
+		rowNumber.append(ss.str());
+
+		// Draw & color row number.
+		if (rowIndex == getYofCursor(cursor)*columns*8)
+			wattron(window, COLOR_PAIR(9));
+		mvwprintw(window, 1+r, 2, rowNumber.c_str());
+		wattroff(window, COLOR_PAIR(9));
+
+
+		for (int c = 0; c < columns; c++) 
+		{
+			for (int b = 0; b < 8; b++) 
+			{
+				size_t byteIndex = ((r+topRow)*columns*8)+(c*8)+b;
+				auto byte = f->getByte(byteIndex);
+
+				// Did we get a byte or is the index out of bounds?
+				if (!byte.has_value()) {
+					break;
+				}
+
+				u_int8_t current = byte.value();
+
+				// Get appropriate color for byte.
+				int color = getByteColor(current, byteIndex, cursor);
+				wattron(window, COLOR_PAIR(color));
+
+				// Draw hex representation of byte.
+				mvwprintw(window, 1+r, 13 + c*26 + b*3, byteToHexString(current).c_str());
+
+				// Draw char representation of byte.
+				if (current < 127 && current > 32) mvwaddch(window, 1+r, 13 + columns*26 + c*11 + b, current);
+				else mvwprintw(window, 1+r, 13 + columns*26 + c*11 + b, ".");
+
+				// Disable color again.
+				wattroff(window, COLOR_PAIR(color));
+			}
+		}
 	}
 
-	void viewer::drawBorders()
+	void HexViewer::drawBorders()
 	{
 		const static char* horizontal = "═";
 		const static char* vertical = "║";
@@ -208,12 +216,12 @@ namespace gui
 		}
 	}
 
-	u_int64_t viewer::getYofCursor(u_int64_t cursor)
+	u_int64_t HexViewer::getYofCursor(u_int64_t cursor)
 	{
 		return cursor / (columns*8);
 	}
 
-	u_int64_t viewer::getXofCursor(u_int64_t cursor)
+	u_int64_t HexViewer::getXofCursor(u_int64_t cursor)
 	{
 		return cursor % (columns*8);
 	}

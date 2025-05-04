@@ -6,8 +6,10 @@ const static int CTRL_D = 4;
 const static int ENTER = 13;
 const static int ESCAPE = 27;
 
-HexMeApp::HexMeApp(utils::file &File, Arguments &Args) : file(File), args(Args)
+HexMeApp::HexMeApp(Arguments &Args) : args(Args)
 {
+	this->file = std::shared_ptr<File>(new File(args.file));
+
 	// Setup nCurses.
 	setlocale(LC_ALL, "");
 	initscr();
@@ -33,19 +35,12 @@ HexMeApp::HexMeApp(utils::file &File, Arguments &Args) : file(File), args(Args)
 		init_pair(9, COLOR_BLACK, COLOR_WHITE); // CURSOR
 	}
 
-	// Draw file name and header.
-	std::stringstream ss;
-	ss << file.getName();
-	if (file.getHeader() != "")
-		ss << " | " << file.getHeader();
-	mvaddstr(0, 0, ss.str().c_str());
-
 	// Initial refresh.
 	refresh();
 
 	// Setup all UI elements.
 	commandPrompt = new gui::textbox();
-	hexView = new gui::viewer(this->file);
+	hexView = new gui::HexViewer(this->file);
 
 	if (args.forceColumns.value() > 0)
 	{
@@ -56,9 +51,29 @@ HexMeApp::HexMeApp(utils::file &File, Arguments &Args) : file(File), args(Args)
 	hexView->onResize();
 	commandPrompt->onResize();
 
+	this->onRefresh();
+}
+
+HexMeApp &HexMeApp::onRefresh()
+{
+	move(0,0);
+	clrtoeol();
+
+	std::stringstream ss;
+	ss << this->file->getName();
+	if (this->file->fileType.has_value()) {
+		ss << " | " << this->file->fileType.value().first;
+	}
+	ss << " | " << file->getCursor();
+	mvaddstr(0, 0, ss.str().c_str());
+    
+	refresh();
+
 	// Do inital refresh for all windows.
 	hexView->onRefresh();
 	commandPrompt->onRefresh();
+
+	return *this;
 }
 
 HexMeApp &HexMeApp::onResizeTerminal()
@@ -74,18 +89,19 @@ HexMeApp &HexMeApp::onResizeTerminal()
 	refresh();
 
 	// Refresh all windows.
+	this->onRefresh();
 	hexView->onRefresh();
 	commandPrompt->onRefresh();
 
 	return *this;
 }
 
-HexMeApp &HexMeApp::onHandleInput(const int key_code)
+void HexMeApp::onHandleInput(const int key_code)
 {
 	if (key_code == KEY_RESIZE)
 	{
 		this->onResizeTerminal();
-		return *this;
+		return ;
 	}
 
 	if (key_code == CTRL_D)
@@ -101,54 +117,47 @@ HexMeApp &HexMeApp::onHandleInput(const int key_code)
 			auto cmd = commandPrompt->getText();
 			CommandHandler cmdParser(file, this);
 			cmdParser.executeCmd(cmd);
-			hexView->onRefresh();
-			commandPrompt->clearText();
-			commandPrompt->onRefresh();
 			commandPrompt->focus = false;
+			commandPrompt->clearText();
 		}
 		catch (const CmdSyntaxErrorException &error)
 		{
 			auto msgBox = gui::MessageBoxOkay(this, error.message);
 			msgBox.display();
-			hexView->onRefresh();
 			commandPrompt->clearText();
-			commandPrompt->onRefresh();
 		}
 	}
 
 	else if (commandPrompt->focus)
 	{
 		commandPrompt->onInput(key_code);
-		commandPrompt->onRefresh();
 	}
+
 
 	else {
 		switch (key_code) {
 			case KEY_UP:
-				file.decCursor(hexView->getColumnCount() * 8);
+				if (!file->decCursor(hexView->getColumnCount() * 8)) return;
 				break;
 			case KEY_DOWN:
-				file.incCursor(hexView->getColumnCount() * 8);
+				if (!file->incCursor(hexView->getColumnCount() * 8)) return;
 				break;
 			case KEY_LEFT:
-				file.decCursor();
+				if (!file->decCursor()) return;
 				break;
 			case KEY_RIGHT:
-				file.incCursor();
-				break;
-			case ESCAPE:
-				commandPrompt->focus = true;
+				if (!file->incCursor()) return;
 				break;
 			default:
 				commandPrompt->focus = true;
 				commandPrompt->onInput(key_code);
 				break;
 		}
-		hexView->onRefresh();
-		commandPrompt->onRefresh();
 	}
 
-	return *this;
+	this->onRefresh();
+	hexView->onRefresh();
+	commandPrompt->onRefresh();
 }
 
 HexMeApp &HexMeApp::run()

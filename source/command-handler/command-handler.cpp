@@ -6,16 +6,18 @@
 #include <regex>
 #include <sstream>
 
-CommandHandler::CommandHandler(utils::file &f, HexMeApp *h) : file(f), app(h)
+CommandHandler::CommandHandler(std::weak_ptr<File> f, HexMeApp *h) : file(f), app(h)
 {
+    this->commands["save"] = &CommandHandler::onSave;
     this->commands["help"] = &CommandHandler::onHelp;
     this->commands["exit"] = &CommandHandler::onExit;
-    this->commands["open"] = &CommandHandler::onOpen;
+    this->commands["load"] = &CommandHandler::onOpen;
     this->commands["goto"] = &CommandHandler::onGoto;
     this->commands["move"] = &CommandHandler::onMove;
     this->commands["find"] = &CommandHandler::onFind;
     this->commands["insert"] = &CommandHandler::onInsert;
     this->commands["replace"] = &CommandHandler::onReplace;
+    this->commands["delete"] = &CommandHandler::onDelete;
 }
 
 int64_t CommandHandler::parseInt(std::string &val)
@@ -99,16 +101,32 @@ void CommandHandler::onExit(std::vector<std::string> &tokens)
     exit(0);
 }
 
+void CommandHandler::onSave(std::vector<std::string> &tokens)
+{
+    if (tokens.size() > 2)
+        throw CmdSyntaxErrorException("Please use the correct syntax: goto (start|end|[int])");
+
+    auto f = this->file.lock();
+
+    if (tokens.size() == 2) {
+        auto path = tokens[1];
+        f->save(path);
+    } else {
+        f->save();
+    }
+}
+
 void CommandHandler::onHelp(std::vector<std::string> &tokens)
 {
     std::vector<std::string> msg = {
         "exit                         - Closes application",
-        "open [url]                   - Opens the given file",
+        "load [url]                   - Opens the given file",
         "goto (start/end/[int])       - Set cursor pos to index",
         "move [int]                   - Moves cursor relative",
         "find (first/next/last) [str] - Search for bytes",
         "insert [str]                 - Insert bytes at cursor",
         "replace [str]                - Overwrite bytes at cursor",
+        "delete [int]                 - Remove bytes at cursor",
     };
     auto msgBox = gui::MessageBoxOkay(this->app, msg);
     msgBox.display();
@@ -119,21 +137,20 @@ void CommandHandler::onOpen(std::vector<std::string> &tokens)
     if (tokens.size() == 1)
         throw CmdSyntaxErrorException("Please give a location to go to.");
     if (tokens.size() > 2)
-        throw CmdSyntaxErrorException("Please use the correct syntax: open \"path/to/file.txt\"");
+        throw CmdSyntaxErrorException("Please use the correct syntax: load \"path/to/file.txt\"");
+
+    auto f = this->file.lock();
 
     auto newPath = tokens[1];
-    auto oldPath = file.getPath();
+    auto oldPath = f->getPath();
 
-    try
-    {
-        file.close();
-        file.open(newPath);
+    try {
+        f->load(newPath);
     }
 
-    catch (utils::FailedToOpenFileException &error)
+    catch (FailedToOpenFileException &error)
     {
-        file.close();
-        file.open(oldPath);
+        f->load(oldPath);
         throw CmdSyntaxErrorException("Could not open file.");
     }
 }
@@ -145,29 +162,29 @@ void CommandHandler::onGoto(std::vector<std::string> &tokens)
     else if (tokens.size() > 2)
         throw CmdSyntaxErrorException("Please use the correct syntax: goto (start|end|[int])");
 
+    auto f = this->file.lock();
+
     if (tokens[1] == "start")
     {
-        file.moveCursor(0);
+        f->setCursor(0);
         return;
     }
     if (tokens[1] == "end")
     {
-        file.moveCursor(file.getFileEnd());
+        f->setCursor(f->size());
         return;
     }
 
-    try
-    {
+    try {
         // Convert string to unsigned long long.
         auto location = this->parseInt(tokens[1]);
 
         // Location must be inside file.
-        if (location > file.getFileEnd())
+        if (location > f->size())
             throw CmdSyntaxErrorException("Provided index is located outside of file.");
 
         // Move cursor.
-        else
-            file.moveCursor(location);
+        else f->setCursor(location);
     }
 
     catch (std::invalid_argument const &e)
@@ -187,12 +204,14 @@ void CommandHandler::onMove(std::vector<std::string> &tokens)
 
     try
     {
-        int64_t direction = parseInt(tokens[1]);
-        int64_t current = this->file.getCursorLocation();
-        int64_t end = this->file.getFileEnd();
+        auto f = this->file.lock();
+
+        int64_t direction = this->parseInt(tokens[1]);
+        int64_t current = f->getCursor();
+        int64_t end = f->size();
         int64_t position = std::clamp(current + direction, int64_t{0}, end);
 
-        this->file.moveCursor(position);
+        f->setCursor(position);
     }
     catch (std::out_of_range const &e)
     {
@@ -209,7 +228,8 @@ void CommandHandler::onFind(std::vector<std::string> &tokens)
 
     std::string query;
     unsigned long long start, stop;
-    auto cursor = file.getCursorLocation();
+    auto f = file.lock();
+    auto cursor = f->getCursor();
 
     // Find first occurrence of string.
     if (tokens[1] == "first" || tokens.size() == 2)
@@ -217,14 +237,14 @@ void CommandHandler::onFind(std::vector<std::string> &tokens)
         if (tokens.size() == 2) query = tokens[1];
         else query = tokens[2];
         start = 0;
-        stop = file.getFileEnd();
+        stop = f->size();
     }
 
     // Find last occurrence of string.
     else if (tokens[1] == "last")
     {
         query = tokens[2];
-        start = file.getFileEnd();
+        start = f->size();
         stop = 0;
     }
 
@@ -232,7 +252,7 @@ void CommandHandler::onFind(std::vector<std::string> &tokens)
     else if (tokens[1] == "previous" || tokens[1] == "prev")
     {
         query = tokens[2];
-        start = file.getCursorLocation();
+        start = f->getCursor();
         stop = 0;
     }
 
@@ -240,8 +260,8 @@ void CommandHandler::onFind(std::vector<std::string> &tokens)
     else if (tokens[1] == "next")
     {
         query = tokens[2];
-        start = file.getCursorLocation() + 1;
-        stop = file.getFileEnd() + 1;
+        start = f->getCursor() + 1;
+        stop = f->size() + 1;
     }
 
     // Wrong syntax.
@@ -250,29 +270,29 @@ void CommandHandler::onFind(std::vector<std::string> &tokens)
     // Search for string.
     for (unsigned long long i = start; i != stop; (start < stop) ? i++ : i--)
     {
-        file.moveCursor(i);
-        byte current = file.getCurrentByte();
-        if (current == query[0] && file.getBytesAfterCursor() >= query.size())
+        f->setCursor(i);
+        u_int8_t current = f->getCurrentByte();
+        if (current == query[0] && f->getBytesAfterCursor() >= query.size())
         {
             bool found = true;
             for (unsigned long long a = 0; a < query.size() && found; a++)
             {
-                file.moveCursor(i + a);
-                if (query[a] != file.getCurrentByte())
+                f->setCursor(i + a);
+                if (query[a] != f->getCurrentByte())
                     found = false;
             }
 
             // Move cursor to query location and find.
             if (found)
             {
-                file.moveCursor(i);
+                f->setCursor(i);
                 return;
             }
         }
     }
 
     // Could not find query.
-    file.moveCursor(cursor);
+    f->setCursor(cursor);
     throw CmdSyntaxErrorException("Could not find provided query.");
 }
 
@@ -283,11 +303,10 @@ void CommandHandler::onInsert(std::vector<std::string> &tokens)
     if (tokens.size() > 2)
         throw CmdSyntaxErrorException("Please use the correct syntax: insert \"string\".");
 
-    const char *toInsert = tokens[1].c_str();
-    const int length = tokens[1].length();
-
-    // Replace bytes at cursor.
-    file.insertBytes(toInsert, length);
+    const u_int8_t* token = reinterpret_cast<const u_int8_t*>(tokens[1].c_str());
+    std::vector<u_int8_t> bytes;
+    bytes.assign(token, token + tokens[1].length());
+    this->file.lock()->insertBytes(bytes);
 }
 
 void CommandHandler::onReplace(std::vector<std::string> &tokens)
@@ -297,11 +316,26 @@ void CommandHandler::onReplace(std::vector<std::string> &tokens)
     if (tokens.size() > 2)
         throw CmdSyntaxErrorException("Please use the correct syntax: replace \"string\".");
 
-    const char *newBytes = tokens[1].c_str();
-    const int length = tokens[1].length();
+    const u_int8_t* token = reinterpret_cast<const u_int8_t*>(tokens[1].c_str());
+    std::vector<u_int8_t> bytes;
+    bytes.assign(token, token + tokens[1].length());
+    this->file.lock()->overwriteBytes(bytes);
+}
 
-    // Replace bytes at cursor.
-    file.replaceBytes(newBytes, length);
+void CommandHandler::onDelete(std::vector<std::string> &tokens)
+{
+    if (tokens.size() != 2)
+        throw CmdSyntaxErrorException("Please use the correct syntax: delete [number].");
+    
+    try {
+        auto f = this->file.lock();
+        int64_t amount = this->parseInt(tokens[1]);
+        f->deleteBytes(amount);
+    }
+    catch (std::out_of_range const &e)
+    {
+        throw CmdSyntaxErrorException("Provided number is too large.");
+    }
 }
 
 void CommandHandler::executeCmd(std::string &cmd)

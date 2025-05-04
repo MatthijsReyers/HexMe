@@ -2,10 +2,11 @@
 
 #include "./../app/app.hpp"
 #include "./../app/exceptions.h"
-#include "./../utils/file/file.h"
+#include "./../file/file.hpp"
 
 #include <string>
 #include <map>
+#include <memory>
 #include <vector>
 
 /**
@@ -17,13 +18,14 @@ class CommandHandler
 private:
     typedef void (CommandHandler::*cmdHandler)(std::vector<std::string>& tokens);
 
-    utils::file& file;
+    std::weak_ptr<File> file;
     HexMeApp* app;
     std::map<std::string, cmdHandler> commands;
 
     std::vector<std::string> lexer(std::string cmd);
 
     void onExit(std::vector<std::string>& tokens);
+    void onSave(std::vector<std::string>& tokens);
     void onHelp(std::vector<std::string>& tokens);
     void onOpen(std::vector<std::string>& tokens);
     void onGoto(std::vector<std::string>& tokens);
@@ -31,6 +33,7 @@ private:
     void onFind(std::vector<std::string>& tokens);
     void onInsert(std::vector<std::string>& tokens);
     void onReplace(std::vector<std::string>& tokens);
+    void onDelete(std::vector<std::string>& tokens);
 
     /**
      * Parses an integer string like "-32" or "0x0FF" into an actual integer.
@@ -38,7 +41,7 @@ private:
     int64_t parseInt(std::string& val);
 
 public:
-    CommandHandler(utils::file& file, HexMeApp* app);
+    CommandHandler(std::weak_ptr<File>, HexMeApp* app);
 
     void executeCmd(std::string& cmd);
 };
