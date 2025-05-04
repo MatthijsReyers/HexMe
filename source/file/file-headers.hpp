@@ -9,7 +9,7 @@
 
 const size_t MAX_FILE_HEADER_LEN = 22;
 
-const std::array<FileHeader, 44> fileHeaders = {{
+const std::array<FileHeader, 45> fileHeaders = {{
     {"AVI (Audio Video Interleave video format)", {0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x41, 0x56, 0x49, 0x20}},
     {"BPG (Better Portable Graphics format)", {0x42, 0x50, 0x47, 0xFB}},
     {"BMP (Bitmap format)", {0x42, 0x4D}},
@@ -35,7 +35,7 @@ const std::array<FileHeader, 44> fileHeaders = {{
     {"PNG (Portable Network Graphics)", {0x089, 0x050, 0x04E, 0x047, 0x0D, 0x0A, 0x01A, 0x0A}},
     {"DOS MZ executable ", {0x4D, 0x5A}},
     {"PDF (pdf document)", {37, 80, 68, 70, 45}},
-    {"PSD (Adobe Photoshop Document file)", {0x38, 0x42, 0x50, 0x53, 0x01}},
+    {"PSD (Adobe Photoshop Document file v1)", {0x38, 0x42, 0x50, 0x53, 0x01}},
     {"PSB (Adobe Photoshop Document file v2)", {0x38, 0x42, 0x50, 0x53, 0x02}},
     {"PCAP (libpcap format)", {0xa1, 0xb2, 0xc3, 0xd4}},
     {"PCAP (libpcap format) ", {0xd4, 0xc3, 0xb2, 0xa1}},
