@@ -104,7 +104,7 @@ void CommandHandler::onExit(std::vector<std::string> &tokens)
 void CommandHandler::onSave(std::vector<std::string> &tokens)
 {
     if (tokens.size() > 2)
-        throw CmdSyntaxErrorException("Please use the correct syntax: goto (start|end|[int])");
+        throw CmdSyntaxErrorException("Please use the correct syntax: save [path]");
 
     auto f = this->file.lock();
 
