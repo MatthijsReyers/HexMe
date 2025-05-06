@@ -11,8 +11,12 @@ namespace gui
     class MessageBoxOkay
     {
     protected:
-        int width, height;
-        int x, y;
+        unsigned int width = 0;
+        unsigned int height = 0;
+
+        unsigned int x = 0;
+        unsigned int y = 0;
+        
         WINDOW* window;
         std::vector<std::string> text;
 

@@ -4,23 +4,22 @@ namespace gui
 {
     MessageBoxOkay::MessageBoxOkay(HexMeApp* app, const std::vector<std::string> t): text(t), app(app)
     {
-        height = text.size() + 3;
+        this->height = text.size() + 3;
 
         // Find the widest line to set the width of the msg box to.
         for (auto line : text)
             if (width < int(line.size()) + 4)
-                width = line.size() + 4;
+                this->width = line.size() + 4;
 
-        window = newwin(height, width, 0, 0);
+        this->window = newwin(height, width, 0, 0);
     }
 
     MessageBoxOkay::MessageBoxOkay(HexMeApp* app, const std::string t): app(app)
     {
-        text = std::vector<std::string>();
-        text.push_back(t);
-        height = 4;
-        width = t.length() + 4;
-        window = newwin(height, width, 0, 0);
+        this->text.push_back(t);
+        this->height = 4;
+        this->width = t.length() + 4;
+        this->window = newwin(height, width, 0, 0);
     }
 
     MessageBoxOkay::~MessageBoxOkay()
@@ -30,8 +29,7 @@ namespace gui
 
     MessageBoxOkay& MessageBoxOkay::display()
     {
-        onResize();
-        this->onRefresh();
+        this->onResize();
 
         // Wait for user input.
         auto input = getch();
@@ -56,7 +54,8 @@ namespace gui
 
         wclear(window);
         mvwin(window, y, x);
-        onRefresh();
+        
+        this->onRefresh();
 
         return *this;
     }
@@ -70,9 +69,6 @@ namespace gui
 		const static char* cornerTR = "╗";
 		const static char* cornerBL = "╚";
 		const static char* cornerBR = "╝";
-
-        int x, y;
-        getyx(stdscr, y, x);
 
         for (int x = 1; x < width-1; x++) {
             mvwprintw(window, 0, x, horizontal);
@@ -96,6 +92,8 @@ namespace gui
         mvwprintw(window, height-2, (width / 2)-2, "[OK]");
         wattroff(window, COLOR_PAIR(9));
 
+        int x, y;
+        getyx(stdscr, y, x);
         move(y,x);
 
         wrefresh(window);

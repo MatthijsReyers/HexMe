@@ -9,6 +9,7 @@
 CommandHandler::CommandHandler(std::weak_ptr<File> f, HexMeApp *h) : file(f), app(h)
 {
     this->commands["save"] = &CommandHandler::onSave;
+    this->commands["echo"] = &CommandHandler::onEcho;
     this->commands["help"] = &CommandHandler::onHelp;
     this->commands["exit"] = &CommandHandler::onExit;
     this->commands["load"] = &CommandHandler::onOpen;
@@ -93,6 +94,16 @@ std::vector<std::string> CommandHandler::lexer(std::string cmd)
     }
 
     return res;
+}
+
+void CommandHandler::onEcho(std::vector<std::string> &tokens)
+{
+    std::vector<std::string> msg;
+    if (tokens.size() > 1) { msg.push_back(tokens[1]); }
+    else { msg.push_back("[empty string]"); }
+    logMessage("creating message box");
+    auto msgBox = gui::MessageBoxOkay(this->app, msg);
+    msgBox.display();
 }
 
 void CommandHandler::onExit(std::vector<std::string> &tokens)

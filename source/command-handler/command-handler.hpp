@@ -24,6 +24,7 @@ private:
 
     std::vector<std::string> lexer(std::string cmd);
 
+    void onEcho(std::vector<std::string>& tokens);
     void onExit(std::vector<std::string>& tokens);
     void onSave(std::vector<std::string>& tokens);
     void onHelp(std::vector<std::string>& tokens);
