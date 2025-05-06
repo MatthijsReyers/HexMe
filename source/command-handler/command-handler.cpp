@@ -101,7 +101,6 @@ void CommandHandler::onEcho(std::vector<std::string> &tokens)
     std::vector<std::string> msg;
     if (tokens.size() > 1) { msg.push_back(tokens[1]); }
     else { msg.push_back("[empty string]"); }
-    logMessage("creating message box");
     auto msgBox = gui::MessageBoxOkay(this->app, msg);
     msgBox.display();
 }
