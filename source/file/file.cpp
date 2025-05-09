@@ -91,7 +91,10 @@ std::string File::getPath()
 std::string File::getName()
 {
     std::size_t found = path.find_last_of("/\\");
-    return path.substr(0,found);
+    if (found == std::string::npos) {
+        return path;
+    }
+    return path.substr(found + 1, path.size());
 }
 
 size_t File::size()

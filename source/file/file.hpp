@@ -17,7 +17,7 @@ private:
     /**
      * The actual data in the file + any changes the user may have made.
      */
-    std::vector<u_int8_t> data;
+    std::vector<u_int8_t> data = {};
 
     /**
      * Location of the file
