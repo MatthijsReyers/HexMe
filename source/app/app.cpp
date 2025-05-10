@@ -9,6 +9,7 @@
 std::optional<std::shared_ptr<HexMeApp>> appSingleton;
 
 const static int CTRL_D = 4;
+const static int CTRL_O = 15;
 const static int ENTER = 13;
 const static int ESCAPE = 27;
 
@@ -83,9 +84,13 @@ void HexMeApp::onHandleInput(const int key_code)
 		return ;
 	}
 
-	if (key_code == CTRL_D)
+	else if (key_code == CTRL_D)
 	{
 		this->close();
+	}
+
+	else if (key_code == CTRL_O) {
+		this->file->save();
 	}
 
 	else if (key_code == ENTER)
@@ -109,7 +114,6 @@ void HexMeApp::onHandleInput(const int key_code)
 	{
 		commandPrompt->onInput(key_code);
 	}
-
 
 	else {
 		switch (key_code) {
