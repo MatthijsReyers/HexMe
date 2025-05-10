@@ -10,6 +10,7 @@ namespace gui
     class textbox
     {
     private:
+        const static int INSET = 331;
         const static int ESCAPE = 27;
         const static int BACKSPACE = 127;
         const static int CTRL_BACKSPACE = 23;
@@ -23,6 +24,8 @@ namespace gui
         std::vector<std::string> history;
         unsigned long int historyPosition = 0;
         unsigned long long cursorPosition = 0;
+
+        bool insetEnabled = false;
 
         void moveCursor(const int direction);
         void addChar(const char character);

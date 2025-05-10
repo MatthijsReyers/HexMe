@@ -33,6 +33,13 @@ namespace gui
 				history[0] = "" + history[historyPosition];
 				historyPosition = 0;
 			}
+			if (this->insetEnabled) {
+				if (cursorPosition < history[historyPosition].size()) {
+					history[historyPosition][cursorPosition] = char(key);
+					cursorPosition++;
+					return *this;
+				}
+			}
 			history[historyPosition].insert(cursorPosition,{char(key)});
 			cursorPosition++;
 		}
@@ -40,6 +47,10 @@ namespace gui
 		{
 			case ESCAPE:
 				this->focus = false;
+				break;
+
+			case INSET:
+				this->insetEnabled = !this->insetEnabled;
 				break;
 
 			case KEY_UP:
