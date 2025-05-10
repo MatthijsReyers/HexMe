@@ -1,12 +1,18 @@
 #include "app.hpp"
 #include "./../command-handler/command-handler.hpp"
-#include "./../gui/message-box/message-box-okay.hpp"
+#include "./../gui/dialog/dialog-okay.hpp"
+
+/**
+ * Pointer to the global app instance, this is used to give various UI elements access to the app
+ * instance when they need it and to ensure there is never more than one active app instance.
+ */
+std::optional<std::shared_ptr<HexMeApp>> appSingleton;
 
 const static int CTRL_D = 4;
 const static int ENTER = 13;
 const static int ESCAPE = 27;
 
-HexMeApp::HexMeApp(Arguments &Args) : args(Args)
+HexMeApp::HexMeApp(Arguments &a) : args(a)
 {
 	this->file = std::shared_ptr<File>(new File(args.file));
 
@@ -52,6 +58,19 @@ HexMeApp::HexMeApp(Arguments &Args) : args(Args)
 	commandPrompt->onResize();
 
 	this->onRefresh();
+}
+
+std::shared_ptr<HexMeApp> HexMeApp::create(Arguments &a)
+{
+	if (appSingleton.has_value()) {
+		throw std::runtime_error(
+			"There is already an active app instance."
+		);
+	}
+	HexMeApp* appRaw = new HexMeApp(a);
+	std::shared_ptr<HexMeApp> app = std::shared_ptr<HexMeApp>(appRaw);
+	appSingleton = app;
+	return app;
 }
 
 HexMeApp &HexMeApp::onRefresh()
@@ -122,7 +141,7 @@ void HexMeApp::onHandleInput(const int key_code)
 		}
 		catch (const CmdSyntaxErrorException &error)
 		{
-			auto msgBox = gui::MessageBoxOkay(this, error.message);
+			auto msgBox = gui::DialogOkay(error.message);
 			msgBox.display();
 			commandPrompt->clearText();
 		}
@@ -192,12 +211,21 @@ HexMeApp &HexMeApp::run()
 	return *this;
 }
 
-HexMeApp &HexMeApp::close()
+void HexMeApp::close()
 {
+	// Clear singleton since the user could decide to create a new app instance after this..
+	appSingleton.value().reset();
+	
 	// Set terminal back to normal mode.
 	echo();
 	endwin();
+}
 
-	// Return reference to self.
-	return *this;
+std::shared_ptr<HexMeApp> getApp() {
+	if (!appSingleton.has_value()) {
+		throw std::runtime_error(
+			"Cannot call getApp() before there is an active app instance."
+		);
+	}
+	return appSingleton.value();
 }

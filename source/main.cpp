@@ -5,8 +5,6 @@
 
 int main(const int argc, char const **argv)
 {
-	HexMeApp* application = nullptr;
-
 	try {
 		auto args = Arguments::parse(argc, argv);
 
@@ -23,10 +21,9 @@ int main(const int argc, char const **argv)
     	if (args.file == "")
         	throw InvalidArgsException("Please provide a file to display.");
 
-		application = new HexMeApp(args);
+		auto application = HexMeApp::create(args);
 		application->run();
 		application->close();
-		delete application;
 	}
 
 	catch (const InvalidArgsException &error) {
@@ -41,10 +38,8 @@ int main(const int argc, char const **argv)
 	}
 	
 	catch (const HexMeException &error) {
-		if (application != nullptr) {
-			application->close();
-			delete application;
-		}
+		auto application = getApp();
+		application->close();
 		std::cerr << "ERROR: " << error.message << std::endl;
 		exit(1);
 	}

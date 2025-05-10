@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <memory>
 #include <iostream>
 #include <stdlib.h>
 #include <ncurses.h>
@@ -22,12 +23,16 @@ class HexMeApp
 		std::shared_ptr<File> file;
 		Arguments& args;
 
-		HexMeApp(const HexMeApp& copy) = delete;
+		// HexMeApp(const HexMeApp& copy) = delete;
+		// HexMeApp& operator=(const HexMeApp&) = delete;
 
-	public:
+	protected:
 		HexMeApp(Arguments& Args);
 
-		HexMeApp& close();
+	public:
+		static std::shared_ptr<HexMeApp> create(Arguments& Args);
+
+		void close();
 		HexMeApp& run();
 		
 		HexMeApp& onRefresh();
@@ -36,3 +41,9 @@ class HexMeApp
 
 		HexMeApp& executeCmd(const std::string& cmd);
 };
+
+/**
+ * Returns a pointer to the singular app instance, note that this function will throw an error if
+ * called before the app is initalized so you should take care when using it outside the TUI code.
+*/
+std::shared_ptr<HexMeApp> getApp();

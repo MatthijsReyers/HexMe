@@ -1,7 +1,7 @@
 #include "command-handler.hpp"
 
 #include "./../utils/stringtools/escape.h"
-#include "./../gui/message-box/message-box-okay.hpp"
+#include "./../gui/dialog/dialog-okay.hpp"
 
 #include <regex>
 #include <sstream>
@@ -101,8 +101,7 @@ void CommandHandler::onEcho(std::vector<std::string> &tokens)
     std::vector<std::string> msg;
     if (tokens.size() > 1) { msg.push_back(tokens[1]); }
     else { msg.push_back("[empty string]"); }
-    auto msgBox = gui::MessageBoxOkay(this->app, msg);
-    msgBox.display();
+    gui::DialogOkay(msg).display();
 }
 
 void CommandHandler::onExit(std::vector<std::string> &tokens)
@@ -138,8 +137,7 @@ void CommandHandler::onHelp(std::vector<std::string> &tokens)
         "replace [str]                - Overwrite bytes at cursor",
         "delete [int]                 - Remove bytes at cursor",
     };
-    auto msgBox = gui::MessageBoxOkay(this->app, msg);
-    msgBox.display();
+    gui::DialogOkay(msg).display();
 }
 
 void CommandHandler::onOpen(std::vector<std::string> &tokens)
