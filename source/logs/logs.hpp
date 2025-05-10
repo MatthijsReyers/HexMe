@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 void logMessage(std::string& msg);

@@ -52,7 +52,7 @@ namespace gui
     {
         this->choice = 0;
         if (this->buttons.size() > 0) {
-            choice = std::max(this->defaultChoice, this->buttons.size() - 1);
+            choice = std::min(this->defaultChoice, this->buttons.size() - 1);
         }
 
         bool open = true;

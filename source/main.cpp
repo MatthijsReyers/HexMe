@@ -22,8 +22,8 @@ int main(const int argc, char const **argv)
         	throw InvalidArgsException("Please provide a file to display.");
 
 		auto application = HexMeApp::create(args);
-		application->run();
-		application->close();
+		application->start();
+		application->cleanUp();
 	}
 
 	catch (const InvalidArgsException &error) {
@@ -39,7 +39,7 @@ int main(const int argc, char const **argv)
 	
 	catch (const HexMeException &error) {
 		auto application = getApp();
-		application->close();
+		application->cleanUp();
 		std::cerr << "ERROR: " << error.message << std::endl;
 		exit(1);
 	}

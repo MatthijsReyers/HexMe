@@ -5,6 +5,7 @@
 #include "./../gui/hex-viewer/hex-viewer.hpp"
 #include "./../utils/argparser/arguments.hpp"
 #include "./../file/file.hpp"
+#include "../../command-handler/command-handler.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -20,20 +21,31 @@ class HexMeApp
 		gui::textbox* commandPrompt;
 		gui::HexViewer* hexView;
 
-		std::shared_ptr<File> file;
 		Arguments& args;
 
-		// HexMeApp(const HexMeApp& copy) = delete;
-		// HexMeApp& operator=(const HexMeApp&) = delete;
+		CommandHandler cmdParser;
 
-	protected:
 		HexMeApp(Arguments& Args);
 
+		bool running = false;
+		void run();
+
 	public:
+		HexMeApp(const HexMeApp& copy) = delete;
+		HexMeApp& operator=(const HexMeApp&) = delete;
+
+		std::shared_ptr<File> file;
+
 		static std::shared_ptr<HexMeApp> create(Arguments& Args);
 
 		void close();
-		HexMeApp& run();
+		
+		void cleanUp();
+
+		/**
+		 * Starts the application, note that this function will not return until the app stops.
+		 */
+		void start();
 		
 		HexMeApp& onRefresh();
 		HexMeApp& onResizeTerminal();

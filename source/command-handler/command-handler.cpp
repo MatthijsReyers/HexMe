@@ -2,11 +2,12 @@
 
 #include "./../utils/stringtools/escape.h"
 #include "./../gui/dialog/dialog-okay.hpp"
+#include "./../app/app.hpp"
 
 #include <regex>
 #include <sstream>
 
-CommandHandler::CommandHandler(std::weak_ptr<File> f, HexMeApp *h) : file(f), app(h)
+CommandHandler::CommandHandler(std::weak_ptr<File> f) : file(f)
 {
     this->commands["save"] = &CommandHandler::onSave;
     this->commands["echo"] = &CommandHandler::onEcho;
@@ -106,8 +107,8 @@ void CommandHandler::onEcho(std::vector<std::string> &tokens)
 
 void CommandHandler::onExit(std::vector<std::string> &tokens)
 {
+    auto app = getApp();
     app->close();
-    exit(0);
 }
 
 void CommandHandler::onSave(std::vector<std::string> &tokens)

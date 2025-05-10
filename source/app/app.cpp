@@ -1,5 +1,5 @@
 #include "app.hpp"
-#include "./../command-handler/command-handler.hpp"
+#include "./../gui/dialog/dialog.hpp"
 #include "./../gui/dialog/dialog-okay.hpp"
 
 /**
@@ -12,52 +12,12 @@ const static int CTRL_D = 4;
 const static int ENTER = 13;
 const static int ESCAPE = 27;
 
-HexMeApp::HexMeApp(Arguments &a) : args(a)
+HexMeApp::HexMeApp(Arguments &a) 
+	: args(a), cmdParser(CommandHandler(this->file))
 {
 	this->file = std::shared_ptr<File>(new File(args.file));
+	this->cmdParser = CommandHandler(this->file);
 
-	// Setup nCurses.
-	setlocale(LC_ALL, "");
-	initscr();
-	keypad(stdscr, true);
-	nonl();
-	noecho();
-
-	// Setup nCurses colors.
-	if (has_colors())
-	{
-		use_default_colors();
-		start_color();
-
-		init_pair(0, -1, -1);					// DEFAULT
-		init_pair(1, 0, -1);					// BLACK
-		init_pair(2, 1, -1);					// RED
-		init_pair(3, 2, -1);					// BLUE
-		init_pair(4, 3, -1);					// GREEN
-		init_pair(5, 4, -1);					// YELLOW
-		init_pair(6, 5, -1);					// PURPLE
-		init_pair(7, 6, -1);					// CYAN
-		init_pair(8, 7, -1);					// WHITE
-		init_pair(9, COLOR_BLACK, COLOR_WHITE); // CURSOR
-	}
-
-	// Initial refresh.
-	refresh();
-
-	// Setup all UI elements.
-	commandPrompt = new gui::textbox();
-	hexView = new gui::HexViewer(this->file);
-
-	if (args.forceColumns.value() > 0)
-	{
-		hexView->maxColumns = args.forceColumns.value();
-	}
-
-	// Calculate initial window values.
-	hexView->onResize();
-	commandPrompt->onResize();
-
-	this->onRefresh();
 }
 
 std::shared_ptr<HexMeApp> HexMeApp::create(Arguments &a)
@@ -126,7 +86,6 @@ void HexMeApp::onHandleInput(const int key_code)
 	if (key_code == CTRL_D)
 	{
 		this->close();
-		exit(0);
 	}
 
 	else if (key_code == ENTER)
@@ -134,8 +93,7 @@ void HexMeApp::onHandleInput(const int key_code)
 		try
 		{
 			auto cmd = commandPrompt->getText();
-			CommandHandler cmdParser(file, this);
-			cmdParser.executeCmd(cmd);
+			this->cmdParser.executeCmd(cmd);
 			commandPrompt->focus = false;
 			commandPrompt->clearText();
 		}
@@ -179,10 +137,62 @@ void HexMeApp::onHandleInput(const int key_code)
 	commandPrompt->onRefresh();
 }
 
-HexMeApp &HexMeApp::run()
+void HexMeApp::start() 
+{
+	if (this->running) return;
+	this->running = true;
+
+	// Setup nCurses.
+	setlocale(LC_ALL, "");
+	initscr();
+	keypad(stdscr, true);
+	nonl();
+	noecho();
+
+	// Setup nCurses colors.
+	if (has_colors())
+	{
+		use_default_colors();
+		start_color();
+
+		init_pair(0, -1, -1);					// DEFAULT
+		init_pair(1, 0, -1);					// BLACK
+		init_pair(2, 1, -1);					// RED
+		init_pair(3, 2, -1);					// BLUE
+		init_pair(4, 3, -1);					// GREEN
+		init_pair(5, 4, -1);					// YELLOW
+		init_pair(6, 5, -1);					// PURPLE
+		init_pair(7, 6, -1);					// CYAN
+		init_pair(8, 7, -1);					// WHITE
+		init_pair(9, COLOR_BLACK, COLOR_WHITE); // CURSOR
+	}
+
+	// Initial refresh.
+	refresh();
+
+	// Setup all UI elements.
+	commandPrompt = new gui::textbox();
+	hexView = new gui::HexViewer(this->file);
+
+	if (args.forceColumns.value() > 0)
+	{
+		hexView->maxColumns = args.forceColumns.value();
+	}
+
+	// Calculate initial window values.
+	hexView->onResize();
+	commandPrompt->onResize();
+
+	this->onRefresh();
+	this->running = true;
+
+	this->run();
+}
+
+void HexMeApp::run()
 {
 	int saw_escape = false;
-	while (true)
+	while (this->running)
 	{
 		int key_code = getch();
 
@@ -206,23 +216,47 @@ HexMeApp &HexMeApp::run()
 
 		this->onHandleInput(key_code);
 	}
-
-	// Return reference to self.
-	return *this;
 }
 
 void HexMeApp::close()
 {
+	if (this->file->unsavedChanges) {
+		std::vector<std::string> text = {
+			"You have made unsaved changes to this file", 
+			"do you want to save before exiting?"
+		};
+		std::vector<std::string> buttons = {
+			"cancel", "discard", "save",
+		};
+
+		auto saveChanges = gui::Dialog(text, buttons);
+		auto option = saveChanges.display();
+
+		if (!option.has_value() || option.value() == 0) { return; }
+
+		if (option.value() == 2) {
+			this->file->save();
+		}
+	}
+	// Stop the control loop from running again.
+	this->running = false;
+	this->cleanUp();
+}
+
+void HexMeApp::cleanUp()
+{
 	// Clear singleton since the user could decide to create a new app instance after this..
 	appSingleton.value().reset();
-	
+
 	// Set terminal back to normal mode.
 	echo();
 	endwin();
 }
 
-std::shared_ptr<HexMeApp> getApp() {
-	if (!appSingleton.has_value()) {
+std::shared_ptr<HexMeApp> getApp() 
+{
+	if (!appSingleton.has_value()) 
+	{
 		throw std::runtime_error(
 			"Cannot call getApp() before there is an active app instance."
 		);

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "./../app/app.hpp"
 #include "./../app/exceptions.h"
 #include "./../file/file.hpp"
 
@@ -19,7 +18,6 @@ private:
     typedef void (CommandHandler::*cmdHandler)(std::vector<std::string>& tokens);
 
     std::weak_ptr<File> file;
-    HexMeApp* app;
     std::map<std::string, cmdHandler> commands;
 
     std::vector<std::string> lexer(std::string cmd);
@@ -42,7 +40,7 @@ private:
     int64_t parseInt(std::string& val);
 
 public:
-    CommandHandler(std::weak_ptr<File>, HexMeApp* app);
+    CommandHandler(std::weak_ptr<File>);
 
     void executeCmd(std::string& cmd);
 };
